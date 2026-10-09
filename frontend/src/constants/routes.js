@@ -5,5 +5,6 @@ export const ROUTES = {
   REGISTER: '/auth/register',
   APP: '/app',
   DASHBOARD: '/app',
+  TREEMAP: '/app/treemap',
   NOT_FOUND: '*'
 };

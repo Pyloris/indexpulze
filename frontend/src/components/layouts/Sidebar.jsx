@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { Home, Activity, LayoutGrid, List, BarChart2, Settings2 } from 'lucide-react';
 import { ROUTES } from '../../constants/routes';
 
 const NavItem = ({ to, icon, label, isActive }) => {
@@ -17,7 +18,7 @@ const NavItem = ({ to, icon, label, isActive }) => {
         transition: 'all 0.2s ease'
       }}
     >
-      <span style={{ fontSize: '16px' }}>{icon}</span>
+      <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>
       <span className="text-body-sm" style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{label}</span>
     </Link>
   );
@@ -41,12 +42,8 @@ export const Sidebar = () => {
 
       {/* Nav */}
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <NavItem to="#" icon="🏠" label="Overview" isActive={false} />
-        <NavItem to={ROUTES.DASHBOARD} icon="📊" label="Terminal / Live Chart" isActive={true} />
-        <NavItem to="#" icon="🔲" label="Constituent Treemap" isActive={false} />
-        <NavItem to="#" icon="📋" label="Option Chain OI" isActive={false} />
-        <NavItem to="#" icon="📉" label="Orderflow & Depth" isActive={false} />
-        <NavItem to="#" icon="⚙️" label="Terminal Settings" isActive={false} />
+        <NavItem to={ROUTES.DASHBOARD} icon={<Home size={18} />} label="Overview" isActive={location.pathname.split("/").at(2) === "app" && location.pathname.split("/").length == 2} />
+        <NavItem to={ROUTES.TREEMAP} icon={<LayoutGrid size={18} />} label="Constituent Treemap" isActive={location.pathname.includes('/treemap')} />
       </nav>
 
       {/* Footer Metrics */}

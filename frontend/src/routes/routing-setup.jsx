@@ -9,6 +9,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { Landing } from '../pages/landing/Landing';
 import { Login } from '../pages/auth/login/Login';
 import { Dashboard } from '../pages/dashboard/Dashboard';
+import { Treemap } from '../pages/treemap/Treemap';
 
 export const router = createBrowserRouter([
   {
@@ -34,7 +35,9 @@ export const router = createBrowserRouter([
         path: '',
         element: <DashboardLayout />,
         children: [
-          { index: true, element: <Dashboard /> }
+          { index: true, element: <Dashboard /> },
+          { path: 'dashboard', element: <Dashboard /> },
+          { path: 'treemap', element: <Treemap /> }
         ]
       }
     ]
