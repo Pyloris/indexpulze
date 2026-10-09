@@ -1,3 +1,5 @@
+import { UserMenu } from './UserMenu';
+
 export const Topbar = () => {
   return (
     <header className="surface-level-1" style={{ padding: '8px var(--spacing-lg)', borderBottom: '1px solid var(--border-active)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -28,14 +30,8 @@ export const Topbar = () => {
 
       {/* Right Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-lg)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', backgroundColor: 'rgba(6, 182, 212, 0.1)', borderRadius: '4px', border: '1px solid rgba(6, 182, 212, 0.2)' }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--signal-bullish)' }}></span>
-          <span className="text-data-mono-sm" style={{ color: 'var(--signal-accent)' }}>MARKET OPEN</span>
-        </div>
         <span className="text-data-mono-sm" style={{ color: 'var(--text-secondary)' }}>IST 14:24:18</span>
-        <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'var(--signal-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--bg-canvas)', fontSize: '14px', cursor: 'pointer' }}>
-          👤
-        </div>
+        <UserMenu />
       </div>
       
     </header>

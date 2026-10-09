@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { IndexCard } from './components/IndexCard';
 import { TreemapTile } from './components/TreemapTile';
 
@@ -6,6 +7,10 @@ export const Treemap = () => {
   const [selectedIndex, setSelectedIndex] = useState('NIFTY 50');
 
   return (
+    <>
+    <Helmet>
+      <title>Constituent Treemap - Pulse Core</title>
+    </Helmet>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)', height: '100%' }}>
       
       {/* Top Meta Header */}
@@ -278,5 +283,6 @@ export const Treemap = () => {
       </div>
       
     </div>
+    </>
   );
 };

@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../../../hooks/useAuth';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
@@ -11,6 +12,10 @@ export const Login = () => {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Login - Pulse Core Terminal</title>
+    </Helmet>
     <div>
       {/* Form */}
 
@@ -45,5 +50,6 @@ export const Login = () => {
 
       </form>
     </div>
+    </>
   );
 };

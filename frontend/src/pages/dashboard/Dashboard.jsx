@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { ConstituentRow } from './components/ConstituentRow';
 import { MetricBox } from './components/MetricBox';
 import { ChartWidget } from './components/ChartWidget';
@@ -11,6 +12,10 @@ export const Dashboard = () => {
   const availableStudies = ['EMA 20/50', 'VOL PROF', 'SUPERTREND', 'OI SPIKES'];
 
   return (
+    <>
+    <Helmet>
+      <title>Dashboard - Pulse Core Terminal</title>
+    </Helmet>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 'var(--spacing-xl)', minHeight: '100%' }}>
       
       {/* LEFT COLUMN: Main Chart & Metrics */}
@@ -202,5 +207,6 @@ export const Dashboard = () => {
 
       </div>
     </div>
+    </>
   );
 };

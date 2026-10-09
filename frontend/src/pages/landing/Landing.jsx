@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { MetricCard } from './components/MetricCard';
@@ -9,6 +10,10 @@ import { Heatmap } from '../../components/ui/Heatmap';
 
 export const Landing = () => {
   return (
+    <>
+    <Helmet>
+      <title>Pulse Core - Institutional Trading Terminal</title>
+    </Helmet>
     <div style={{ backgroundColor: 'var(--bg-canvas)' }}>
       {/* Hero Section */}
       <section style={{ padding: 'var(--spacing-xl) var(--spacing-xl) calc(var(--spacing-xl) * 2)', borderBottom: '1px solid var(--border-active)', display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 'calc(var(--spacing-xl) * 2)', maxWidth: '1440px', margin: '0 auto' }}>
@@ -253,5 +258,6 @@ export const Landing = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };

@@ -10,6 +10,7 @@ import { Landing } from '../pages/landing/Landing';
 import { Login } from '../pages/auth/login/Login';
 import { Dashboard } from '../pages/dashboard/Dashboard';
 import { Treemap } from '../pages/treemap/Treemap';
+import { AccountSettings } from '../pages/account/AccountSettings';
 
 export const router = createBrowserRouter([
   {
@@ -37,7 +38,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Dashboard /> },
           { path: 'dashboard', element: <Dashboard /> },
-          { path: 'treemap', element: <Treemap /> }
+          { path: 'treemap', element: <Treemap /> },
+          { path: 'account', element: <AccountSettings /> }
         ]
       }
     ]

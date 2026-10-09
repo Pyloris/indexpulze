@@ -6,5 +6,6 @@ export const ROUTES = {
   APP: '/app',
   DASHBOARD: '/app',
   TREEMAP: '/app/treemap',
+  ACCOUNT: '/app/account',
   NOT_FOUND: '*'
 };
