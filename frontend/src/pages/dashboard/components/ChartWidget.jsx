@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { createChart, CandlestickSeries, HistogramSeries, LineSeries } from 'lightweight-charts';
 
-export const ChartWidget = () => {
+export const ChartWidget = ({ index, timeframe }) => {
   const chartContainerRef = useRef();
 
   useEffect(() => {
@@ -81,14 +81,14 @@ export const ChartWidget = () => {
     return () => {
       chart.remove();
     };
-  }, []);
+  }, [index, timeframe]);
 
   return (
     <div className="surface-level-1" style={{ flex: 1, border: '1px solid var(--border-active)', borderRadius: 'var(--radius-md)', padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span className="text-headline-sm">NIFTY 50 INDEX</span>
+          <span className="text-headline-sm">{index} INDEX</span>
           <div className="text-data-mono-sm" style={{ color: 'var(--text-secondary)', display: 'flex', gap: '8px' }}>
             <span>O: <span style={{ color: 'var(--text-muted)' }}>24,840.10</span></span>
             <span>H: <span style={{ color: 'var(--signal-bullish)' }}>24,865.00</span></span>

@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { IndexCard } from './components/IndexCard';
 import { TreemapTile } from './components/TreemapTile';
 
 export const Treemap = () => {
+  const [selectedIndex, setSelectedIndex] = useState('NIFTY 50');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)', height: '100%' }}>
       
@@ -19,12 +22,12 @@ export const Treemap = () => {
 
       {/* Index Cards */}
       <div style={{ display: 'flex', gap: 'var(--spacing-md)', overflowX: 'auto', paddingBottom: '4px' }}>
-        <IndexCard name="NIFTY 50" isActive={true} value="24,852.15" changePct="+0.58%" stocksCount="50" vol="184.2M" isPositive={true} />
-        <IndexCard name="BANK NIFTY" exchange="NSE" value="51,320.40" changePct="-0.41%" stocksCount="12" vol="92.1M" isPositive={false} />
-        <IndexCard name="SENSEX 30" exchange="BSE" value="81,765.20" changePct="+0.51%" stocksCount="30" vol="145.4M" isPositive={true} />
-        <IndexCard name="FINNIFTY" exchange="NSE" value="23,410.90" changePct="+0.29%" stocksCount="20" vol="48.0M" isPositive={true} />
-        <IndexCard name="NIFTY IT" exchange="SECTORAL" value="36,812.35" changePct="-0.92%" stocksCount="10" vol="31.4M" isPositive={false} />
-        <IndexCard name="NIFTY AUTO" exchange="SECTORAL" value="25,480.10" changePct="+1.15%" stocksCount="15" vol="28.6M" isPositive={true} />
+        <IndexCard name="NIFTY 50" isActive={selectedIndex === 'NIFTY 50'} onClick={() => setSelectedIndex('NIFTY 50')} value="24,852.15" changePct="+0.58%" stocksCount="50" vol="184.2M" isPositive={true} />
+        <IndexCard name="BANK NIFTY" exchange="NSE" isActive={selectedIndex === 'BANK NIFTY'} onClick={() => setSelectedIndex('BANK NIFTY')} value="51,320.40" changePct="-0.41%" stocksCount="12" vol="92.1M" isPositive={false} />
+        <IndexCard name="SENSEX 30" exchange="BSE" isActive={selectedIndex === 'SENSEX 30'} onClick={() => setSelectedIndex('SENSEX 30')} value="81,765.20" changePct="+0.51%" stocksCount="30" vol="145.4M" isPositive={true} />
+        <IndexCard name="FINNIFTY" exchange="NSE" isActive={selectedIndex === 'FINNIFTY'} onClick={() => setSelectedIndex('FINNIFTY')} value="23,410.90" changePct="+0.29%" stocksCount="20" vol="48.0M" isPositive={true} />
+        <IndexCard name="NIFTY IT" exchange="SECTORAL" isActive={selectedIndex === 'NIFTY IT'} onClick={() => setSelectedIndex('NIFTY IT')} value="36,812.35" changePct="-0.92%" stocksCount="10" vol="31.4M" isPositive={false} />
+        <IndexCard name="NIFTY AUTO" exchange="SECTORAL" isActive={selectedIndex === 'NIFTY AUTO'} onClick={() => setSelectedIndex('NIFTY AUTO')} value="25,480.10" changePct="+1.15%" stocksCount="15" vol="28.6M" isPositive={true} />
       </div>
 
       {/* Control Bar */}
@@ -58,7 +61,9 @@ export const Treemap = () => {
         {/* Left: Treemap Grid */}
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '16px' }}>
           
-          {/* FINANCIAL SERVICES */}
+          {selectedIndex === 'NIFTY 50' && (
+            <>
+              {/* FINANCIAL SERVICES */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -136,6 +141,34 @@ export const Treemap = () => {
               <TreemapTile symbol="LT" change="+0.95%" value="₹3,680" extra="3.2M SH" bgColor="#6ee7b7" color="#064e3b" style={{ flex: 1 }} />
             </div>
           </div>
+            </>
+          )}
+
+          {selectedIndex === 'BANK NIFTY' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gridColumn: 'span 2', gridRow: 'span 2' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--signal-bearish)' }}></span>
+                   <span className="text-label-caps" style={{ color: 'var(--text-primary)' }}>PRIVATE BANKS <span style={{ color: 'var(--text-muted)' }}>(85.4% Index Wgt)</span></span>
+                 </div>
+                 <span className="text-label-caps" style={{ color: 'var(--signal-bearish)' }}>-0.41% Net</span>
+               </div>
+               <div style={{ flex: 1, display: 'flex' }}>
+                 <TreemapTile symbol="HDFCBANK" change="+1.85%" value="₹1,682.00" bgColor="#34d399" color="#064e3b" style={{ flex: 1.5 }} />
+                 <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                   <TreemapTile symbol="ICICIBANK" change="+1.40%" value="₹1,240.00" bgColor="#34d399" color="#064e3b" style={{ flex: 1 }} />
+                   <TreemapTile symbol="AXIS" change="-0.45%" value="₹1,190.00" bgColor="#f87171" color="#7f1d1d" style={{ flex: 1 }} />
+                   <TreemapTile symbol="KOTAK" change="+0.20%" value="₹1,780.00" bgColor="#059669" color="#ecfdf5" style={{ flex: 1 }} />
+                 </div>
+               </div>
+            </div>
+          )}
+
+          {selectedIndex !== 'NIFTY 50' && selectedIndex !== 'BANK NIFTY' && (
+             <div style={{ gridColumn: 'span 2', gridRow: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+               Select NIFTY 50 or BANK NIFTY for mock data
+             </div>
+          )}
 
         </div>
 

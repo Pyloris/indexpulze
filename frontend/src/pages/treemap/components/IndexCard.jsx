@@ -1,6 +1,6 @@
-export const IndexCard = ({ name, exchange, value, changePct, stocksCount, vol, isActive, isPositive }) => {
+export const IndexCard = ({ name, exchange, value, changePct, stocksCount, vol, isActive, isPositive, onClick }) => {
   return (
-    <div style={{ 
+    <div onClick={onClick} style={{ 
       flex: 1,
       minWidth: '150px',
       padding: 'var(--spacing-md)', 

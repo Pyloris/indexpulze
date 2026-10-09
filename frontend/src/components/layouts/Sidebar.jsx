@@ -42,8 +42,18 @@ export const Sidebar = () => {
 
       {/* Nav */}
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <NavItem to={ROUTES.DASHBOARD} icon={<Home size={18} />} label="Overview" isActive={location.pathname.split("/").at(2) === "app" && location.pathname.split("/").length == 2} />
-        <NavItem to={ROUTES.TREEMAP} icon={<LayoutGrid size={18} />} label="Constituent Treemap" isActive={location.pathname.includes('/treemap')} />
+        <NavItem 
+          to={ROUTES.DASHBOARD} 
+          icon={<Home size={18} />} 
+          label="Overview" 
+          isActive={location.pathname === ROUTES.APP || location.pathname === ROUTES.APP + '/' || location.pathname === '/app/dashboard'} 
+        />
+        <NavItem 
+          to={ROUTES.TREEMAP} 
+          icon={<LayoutGrid size={18} />} 
+          label="Constituent Treemap" 
+          isActive={location.pathname === ROUTES.TREEMAP || location.pathname === ROUTES.TREEMAP + '/'} 
+        />
       </nav>
 
       {/* Footer Metrics */}

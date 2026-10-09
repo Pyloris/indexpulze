@@ -1,8 +1,15 @@
 import { ConstituentRow } from './components/ConstituentRow';
 import { MetricBox } from './components/MetricBox';
 import { ChartWidget } from './components/ChartWidget';
+import { useDashboardStore } from '../../stores/useDashboardStore';
 
 export const Dashboard = () => {
+  const { selectedIndex, setSelectedIndex, timeframe, setTimeframe, studies, toggleStudy } = useDashboardStore();
+  
+  const indices = ['NIFTY 50', 'BANK NIFTY', 'SENSEX', 'FINNIFTY', 'NIFTY IT'];
+  const timeframes = ['1m', '3m', '5m', '15m', '1H', '1D'];
+  const availableStudies = ['EMA 20/50', 'VOL PROF', 'SUPERTREND', 'OI SPIKES'];
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: 'var(--spacing-xl)', minHeight: '100%' }}>
       
@@ -13,11 +20,23 @@ export const Dashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           
           <div style={{ display: 'flex', gap: '4px' }}>
-            <button className="text-label-caps" style={{ padding: '6px 12px', backgroundColor: 'var(--bg-hover)', border: '1px solid var(--border-active)', borderRadius: '4px', color: 'var(--signal-accent)' }}>NIFTY 50</button>
-            <button className="text-label-caps" style={{ padding: '6px 12px', backgroundColor: 'transparent', border: '1px solid transparent', color: 'var(--text-secondary)' }}>BANK NIFTY</button>
-            <button className="text-label-caps" style={{ padding: '6px 12px', backgroundColor: 'transparent', border: '1px solid transparent', color: 'var(--text-secondary)' }}>SENSEX</button>
-            <button className="text-label-caps" style={{ padding: '6px 12px', backgroundColor: 'transparent', border: '1px solid transparent', color: 'var(--text-secondary)' }}>FINNIFTY</button>
-            <button className="text-label-caps" style={{ padding: '6px 12px', backgroundColor: 'transparent', border: '1px solid transparent', color: 'var(--text-secondary)' }}>NIFTY IT</button>
+            {indices.map(idx => (
+              <button 
+                key={idx}
+                onClick={() => setSelectedIndex(idx)}
+                className="text-label-caps" 
+                style={{ 
+                  padding: '6px 12px', 
+                  backgroundColor: selectedIndex === idx ? 'var(--bg-hover)' : 'transparent', 
+                  border: selectedIndex === idx ? '1px solid var(--border-active)' : '1px solid transparent', 
+                  borderRadius: '4px', 
+                  color: selectedIndex === idx ? 'var(--signal-accent)' : 'var(--text-secondary)',
+                  cursor: 'pointer'
+                }}
+              >
+                {idx}
+              </button>
+            ))}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
@@ -33,14 +52,28 @@ export const Dashboard = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: '16px' }}>
              <div className="surface-level-1" style={{ display: 'flex', borderRadius: '4px', border: '1px solid var(--border-active)', overflow: 'hidden' }}>
-               {['1m','3m','5m','15m','1H','1D'].map(t => (
-                 <button key={t} className="text-data-mono-sm" style={{ padding: '4px 8px', backgroundColor: t === '5m' ? 'rgba(6, 182, 212, 0.1)' : 'transparent', color: t === '5m' ? 'var(--signal-accent)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>{t}</button>
+               {timeframes.map(t => (
+                 <button 
+                   key={t} 
+                   onClick={() => setTimeframe(t)}
+                   className="text-data-mono-sm" 
+                   style={{ padding: '4px 8px', backgroundColor: timeframe === t ? 'rgba(6, 182, 212, 0.1)' : 'transparent', color: timeframe === t ? 'var(--signal-accent)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
+                 >
+                   {t}
+                 </button>
                ))}
              </div>
              <div className="surface-level-1" style={{ display: 'flex', alignItems: 'center', borderRadius: '4px', border: '1px solid var(--border-active)', overflow: 'hidden', padding: '0 8px', gap: '12px' }}>
                <span className="text-label-caps" style={{ color: 'var(--text-muted)' }}>STUDIES:</span>
-               {['EMA 20/50','VOL PROF','SUPERTREND','OI SPIKES'].map(s => (
-                 <button key={s} className="text-label-caps" style={{ padding: '4px 0', backgroundColor: 'transparent', color: s === 'EMA 20/50' || s === 'VOL PROF' ? 'var(--signal-accent)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>{s}</button>
+               {availableStudies.map(s => (
+                 <button 
+                   key={s} 
+                   onClick={() => toggleStudy(s)}
+                   className="text-label-caps" 
+                   style={{ padding: '4px 0', backgroundColor: 'transparent', color: studies.includes(s) ? 'var(--signal-accent)' : 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}
+                 >
+                   {s}
+                 </button>
                ))}
              </div>
           </div>
@@ -62,7 +95,7 @@ export const Dashboard = () => {
         </div>
 
         {/* Chart Widget */}
-        <ChartWidget />
+        <ChartWidget index={selectedIndex} timeframe={timeframe} />
 
         {/* Bottom Metrics Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-md)' }}>
