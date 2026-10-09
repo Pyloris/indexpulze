@@ -54,6 +54,12 @@ export const Sidebar = () => {
           label="Constituent Treemap" 
           isActive={location.pathname === ROUTES.TREEMAP || location.pathname === ROUTES.TREEMAP + '/'} 
         />
+        <NavItem 
+          to={ROUTES.VOLUME_PROFILE} 
+          icon={<BarChart2 size={18} />} 
+          label="Volume Profile" 
+          isActive={location.pathname === ROUTES.VOLUME_PROFILE || location.pathname === ROUTES.VOLUME_PROFILE + '/'} 
+        />
       </nav>
 
       {/* Footer Metrics */}

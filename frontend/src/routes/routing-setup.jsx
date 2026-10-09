@@ -10,6 +10,7 @@ import { Landing } from '../pages/landing/Landing';
 import { Login } from '../pages/auth/login/Login';
 import { Dashboard } from '../pages/dashboard/Dashboard';
 import { Treemap } from '../pages/treemap/Treemap';
+import { VolumeProfile } from '../pages/volume-profile/VolumeProfile';
 import { AccountSettings } from '../pages/account/AccountSettings';
 
 export const router = createBrowserRouter([
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Dashboard /> },
           { path: 'dashboard', element: <Dashboard /> },
           { path: 'treemap', element: <Treemap /> },
+          { path: 'volume-profile', element: <VolumeProfile /> },
           { path: 'account', element: <AccountSettings /> }
         ]
       }
