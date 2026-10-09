@@ -1,7 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
 
-import { MainLayout } from '../components/layouts/MainLayout';
+import { LandingLayout } from '../components/layouts/LandingLayout';
+import { AuthLayout } from '../components/layouts/AuthLayout';
+import { DashboardLayout } from '../components/layouts/DashboardLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 
 import { Landing } from '../pages/landing/Landing';
@@ -11,16 +13,29 @@ import { Dashboard } from '../pages/dashboard/Dashboard';
 export const router = createBrowserRouter([
   {
     path: ROUTES.LANDING,
-    element: <MainLayout />,
+    element: <LandingLayout />,
     children: [
       { index: true, element: <Landing /> },
-      { path: ROUTES.LOGIN, element: <Login /> },
-      { 
-        path: ROUTES.DASHBOARD, 
-        element: <ProtectedRoute />, 
+      { path: 'landing/*', element: <Landing /> }
+    ]
+  },
+  {
+    path: ROUTES.AUTH,
+    element: <AuthLayout />,
+    children: [
+      { path: 'login', element: <Login /> }
+    ]
+  },
+  {
+    path: ROUTES.APP,
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: '',
+        element: <DashboardLayout />,
         children: [
           { index: true, element: <Dashboard /> }
-        ] 
+        ]
       }
     ]
   }
