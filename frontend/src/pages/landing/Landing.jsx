@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { Landmark, BarChart2, Target, RefreshCcw } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { MetricCard } from './components/MetricCard';
@@ -7,8 +8,11 @@ import { FeatureCard } from './components/FeatureCard';
 import { ContributionRow } from './components/ContributionRow';
 import { TestimonialCard } from './components/TestimonialCard';
 import { Heatmap } from '../../components/ui/Heatmap';
+import { MiniChart } from './components/MiniChart';
 
 export const Landing = () => {
+  const supportedBrokers = ['5paisa', 'angelone', 'dhan', 'fyers', 'groww', 'hdfc', 'icici', 'kotak', 'sharekhan', 'upstox', 'zerodha'];
+
   return (
     <>
     <Helmet>
@@ -32,7 +36,6 @@ export const Landing = () => {
           
           <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
             <Button variant="primary">Launch Terminal &rarr;</Button>
-            <Button variant="secondary">Explore Live Treemap</Button>
           </div>
           
           <div className="text-body-sm" style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'calc(var(--spacing-xl) * 1.5)' }}>
@@ -53,8 +56,8 @@ export const Landing = () => {
             <Badge variant="accent">LIVE SYNTHETIC PULSE</Badge>
             <div className="text-data-mono-sm" style={{ color: 'var(--signal-bullish)' }}>NIFTY SPOT 24,852.15</div>
           </div>
-          <div className="surface-level-2" style={{ height: '200px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--spacing-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span className="text-body-sm" style={{ color: 'var(--text-muted)' }}>[ Real-time Chart Visualization ]</span>
+          <div className="surface-level-2" style={{ height: '200px', borderRadius: 'var(--radius-md)', marginBottom: 'var(--spacing-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <MiniChart />
           </div>
           <div>
             <div className="text-label-caps" style={{ color: 'var(--text-muted)', marginBottom: 'var(--spacing-md)', display: 'flex', justifyContent: 'space-between' }}>
@@ -64,6 +67,17 @@ export const Landing = () => {
             <ContributionRow name="HDFCBANK 1,681.20" weight="15%" contribution="+48.2" isPositive={true} />
             <ContributionRow name="RELIANCE 2,994.80" weight="10%" contribution="+22.4" isPositive={true} />
             <ContributionRow name="INFY 1,422.10" weight="5%" contribution="-18.8" isPositive={false} />
+          </div>
+        </div>
+      </section>
+
+      {/* Supported Brokers Marquee */}
+      <section style={{ maxWidth: '1440px', margin: '0 auto', padding: '0 var(--spacing-xl)' }}>
+        <div className="broker-marquee-container" style={{ borderTop: 'none', backgroundColor: 'var(--bg-canvas)' }}>
+          <div className="broker-marquee-content">
+            {[...supportedBrokers, ...supportedBrokers, ...supportedBrokers, ...supportedBrokers].map((b, i) => (
+               <img src={`/logos/${b}.png`} key={i} alt={b} title={b.toUpperCase()} style={{ filter: 'none', opacity: 1 }} />
+            ))}
           </div>
         </div>
       </section>
@@ -135,7 +149,7 @@ export const Landing = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--spacing-lg)' }}>
             <FeatureCard 
-              icon="🏛" 
+              icon={<Landmark size={20} />} 
               pillar="01" 
               title="1. Heavyweight Contribution Tracker" 
               description="Track HDFC Bank, Reliance, ICICI Bank, TCS, and Infosys weightages in real-time. Know mathematically whether a 50-point index push is backed by institutional heavyweights or driven by hollow low-weight float."
@@ -152,7 +166,7 @@ export const Landing = () => {
             </FeatureCard>
 
             <FeatureCard 
-              icon="📊" 
+              icon={<BarChart2 size={20} />} 
               pillar="02" 
               title="2. Volume-Weighted Heatmaps" 
               description="Instantly spot institutional accumulation and distribution inside Nifty 50 & Bank Nifty baskets. Treemap tiles adjust sizing continuously based on institutional turnover and block trade velocity."
@@ -162,7 +176,7 @@ export const Landing = () => {
             </FeatureCard>
             
             <FeatureCard 
-              icon="🎯" 
+              icon={<Target size={20} />} 
               pillar="03" 
               title="3. Futures & Options Edge" 
               description="Correlate underlying constituent strength with India VIX, Max Pain strike levels, and Call/Put Open Interest buildup. Prevent buying breakouts that run straight into massive Call writing walls."
@@ -197,7 +211,7 @@ export const Landing = () => {
             </FeatureCard>
 
             <FeatureCard 
-              icon="🔄" 
+              icon={<RefreshCcw size={20} />} 
               pillar="04" 
               title="4. Multi-Index Rotation Engine" 
               description="Compare relative strength versus Nifty 50, Nifty Bank, Sensex, and FinNifty to catch sector rotations early. Pivot instantly into the index experiencing aggressive institutional sector inflows."
@@ -254,7 +268,6 @@ export const Landing = () => {
         </p>
         <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'center' }}>
           <Button variant="primary">Launch Live Terminal</Button>
-          <Button variant="ghost">View Treemap</Button>
         </div>
       </section>
     </div>

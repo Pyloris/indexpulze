@@ -260,3 +260,41 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
   caret-color: var(--text-primary);
 }
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.broker-marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 12px 0;
+  margin-bottom: var(--spacing-xl);
+  border-bottom: 1px solid var(--border-ghost);
+  border-top: 1px solid var(--border-ghost);
+  display: flex;
+  background-color: var(--bg-panel);
+}
+
+.broker-marquee-content {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: marquee 30s linear infinite;
+  min-width: 200%;
+}
+
+.broker-marquee-content img {
+  height: 24px;
+  margin: 0 40px;
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: opacity 0.2s, filter 0.2s;
+}
+
+.broker-marquee-content img:hover {
+  filter: grayscale(0%);
+  opacity: 1;
+}
