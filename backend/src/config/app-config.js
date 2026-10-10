@@ -1,21 +1,10 @@
 import { Config } from "./env.js";
-
-export const buildMongodbUrl = () => {
-  const username = Config.get("MONGODB_USER");
-  const password = Config.get("MONGODB_PASS");
-  const host = Config.get("MONGODB_HOST");
-  const port = Config.get("MONGODB_PORT");
-  const dbName = Config.get("MONGODB_DB", "tradebot");
-
-  let url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin&replicaSet=rs0`;
-
-  return url;
-}
+import { buildMongodbUrl } from "../utils/utils.js";
 
 
 const appConfig = {
 
-    APP_NAME: Config.get("APP_NAME", "trade-bot"),
+    APP_NAME: Config.get("APP_NAME"),
 
     PORT: Config.get("PORT", 8088),
 
@@ -23,7 +12,7 @@ const appConfig = {
     MONGODB_PASS: Config.get("MONGODB_PASS"),
     MONGODB_HOST: Config.get("MONGODB_HOST"),
     MONGODB_PORT: Config.get("MONGODB_PORT"),
-    MONGODB_DB: Config.get("MONGODB_DB", "tradebot"),
+    MONGODB_DB: Config.get("MONGODB_DB"),
 
     MONGODB_URL: buildMongodbUrl(),
 

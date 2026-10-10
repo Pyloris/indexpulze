@@ -40,6 +40,11 @@ export const UserMenu = () => {
     navigate(path);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/auth/login');
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -97,7 +102,7 @@ export const UserMenu = () => {
 
           {/* Logout */}
           <div style={{ padding: '8px 0' }}>
-            <MenuItem icon={LogOut} label="Logout" isDanger={true} onClick={logout} />
+            <MenuItem icon={LogOut} label="Logout" isDanger={true} onClick={handleLogout} />
           </div>
 
         </div>

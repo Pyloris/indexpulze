@@ -1,6 +1,6 @@
 import { UserMenu } from './UserMenu';
 import { useSettingsStore } from '../../pages/settings/store/useSettingsStore';
-import { Wallet } from 'lucide-react';
+import { Wallet, LogOut } from 'lucide-react';
 import { Price } from './Price';
 
 const accountDetails = {
@@ -12,6 +12,7 @@ const accountDetails = {
 export const Topbar = () => {
   const operatingAccount = useSettingsStore(state => state.operatingAccount);
   const account = accountDetails[operatingAccount] || accountDetails.paper;
+
   return (
     <header className="surface-level-1" style={{ padding: '8px var(--spacing-lg)', borderBottom: '1px solid var(--border-active)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       

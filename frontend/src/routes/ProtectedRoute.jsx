@@ -9,7 +9,7 @@ export const ProtectedRoute = () => {
     return <div style={{ padding: 'var(--spacing-xl)' }}>Loading authentication state...</div>;
   }
 
-  if (!isAuthenticated && false) {
+  if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 

@@ -8,6 +8,7 @@ module.exports = {
             autorestart: false,
             max_memory_restart: "8G",
             watch: false,
+            node_args: "--env-file=../.env",
         }
     ]
 }
