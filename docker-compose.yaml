@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  questdb:
+    image: questdb/questdb:latest
+    container_name: questdb
+    restart: always
+    ports:
+      - "${QUESTDB_PORT_PG:-8812}:8812" # Postgres wire protocol
+      - "${QUESTDB_PORT_REST:-9000}:9000" # REST API and Web Console
+      - "${QUESTDB_PORT_ILP:-9009}:9009" # InfluxDB Line Protocol
+      - "${QUESTDB_PORT_HEALTH:-9003}:9003" # Min health server
+    environment:
+      QDB_PG_USER: ${QUESTDB_USER:-admin}
+      QDB_PG_PASSWORD: ${QUESTDB_PASS:-quest}
+    volumes:
+      - questdb_data:/var/lib/questdb
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASS:-examplepassword}
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  questdb_data:
+  mongodb_data:

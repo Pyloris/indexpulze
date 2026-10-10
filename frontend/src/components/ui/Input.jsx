@@ -1,3 +1,5 @@
+import { Eye } from 'lucide-react';
+
 export const Input = ({ label, rightLabel, icon, type = "text", style = {}, ...props }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: 'var(--spacing-lg)' }}>
@@ -14,7 +16,7 @@ export const Input = ({ label, rightLabel, icon, type = "text", style = {}, ...p
         padding: '0 var(--spacing-sm)',
         transition: 'border-color 0.2s ease'
       }}>
-        {icon && <span style={{ color: 'var(--text-secondary)', marginRight: '8px', fontSize: '14px' }}>{icon}</span>}
+        {icon && <span style={{ color: 'var(--text-secondary)', marginRight: '8px', display: 'flex', alignItems: 'center' }}>{icon}</span>}
         <input 
           type={type} 
           style={{ 
@@ -30,7 +32,11 @@ export const Input = ({ label, rightLabel, icon, type = "text", style = {}, ...p
           }} 
           {...props} 
         />
-        {type === 'password' && <span style={{ color: 'var(--text-secondary)', marginLeft: '8px', cursor: 'pointer', fontSize: '14px' }}>👁</span>}
+        {type === 'password' && (
+          <span style={{ color: 'var(--text-secondary)', marginLeft: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <Eye size={16} />
+          </span>
+        )}
       </div>
     </div>
   );

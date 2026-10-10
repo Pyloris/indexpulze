@@ -60,6 +60,12 @@ export const Sidebar = () => {
           label="Volume Profile" 
           isActive={location.pathname === ROUTES.VOLUME_PROFILE || location.pathname === ROUTES.VOLUME_PROFILE + '/'} 
         />
+        <NavItem 
+          to={ROUTES.SETTINGS} 
+          icon={<Settings2 size={18} />} 
+          label="Settings" 
+          isActive={location.pathname === ROUTES.SETTINGS || location.pathname === ROUTES.SETTINGS + '/'} 
+        />
       </nav>
 
       {/* Footer Metrics */}

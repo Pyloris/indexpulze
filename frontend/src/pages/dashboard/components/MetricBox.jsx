@@ -1,8 +1,11 @@
-export const MetricBox = ({ title, badge, badgeColor, mainValue, subValue, highlightValue, subText, progress, progressColor }) => {
+export const MetricBox = ({ title, icon: Icon, badge, badgeColor, mainValue, subValue, highlightValue, subText, progress, progressColor }) => {
   return (
     <div className="surface-level-1" style={{ padding: 'var(--spacing-lg)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', border: '1px solid var(--border-active)', height: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--spacing-md)' }}>
-        <span className="text-label-caps" style={{ color: 'var(--text-muted)', maxWidth: '90px', lineHeight: '1.4' }}>{title}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {Icon && <Icon size={16} style={{ color: 'var(--text-muted)' }} />}
+          <span className="text-label-caps" style={{ color: 'var(--text-muted)', maxWidth: '90px', lineHeight: '1.4' }}>{title}</span>
+        </div>
         {badge && <span className="text-label-caps" style={{ backgroundColor: 'var(--bg-hover)', border: `1px solid ${badgeColor}`, padding: '2px 6px', borderRadius: '4px', color: badgeColor }}>{badge}</span>}
       </div>
       

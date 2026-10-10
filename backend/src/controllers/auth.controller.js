@@ -10,8 +10,8 @@ export class AuthController {
     });
 
     static register = catchError(async (req, res, next) => {
-        const { username, password } = req.body;
-        const result = await AuthService.register({ username, password });
+        const { username, email, password, full_name, profile_picture } = req.body;
+        const result = await AuthService.register({ username, email, password, full_name, profile_picture });
         return ApiResponse.created(res, result, "User registered successfully");
     });
 }

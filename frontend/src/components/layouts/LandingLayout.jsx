@@ -9,18 +9,18 @@ export const LandingLayout = () => {
       <header style={{ padding: 'var(--spacing-sm) var(--spacing-xl)', borderBottom: '1px solid var(--border-active)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-panel)' }}>
         
         {/* Left: Brand & Nav */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xl)' }}>
+        <div style={{ display: 'flex', alignItems: 'left', gap: 'var(--spacing-xl)' }}>
           <h1 className="text-headline-sm" style={{ letterSpacing: '1px' }}>
             TRADE<span style={{ color: 'var(--signal-accent)' }}>BOT</span>
           </h1>
-          <nav style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+          {/* <nav style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
             <span className="text-body-sm" style={{ color: 'var(--signal-accent)', cursor: 'pointer', fontWeight: 'bold' }}>TERMINAL</span>
             <span className="text-body-sm" style={{ color: 'var(--text-secondary)', cursor: 'pointer' }}>LIVE HEATMAP</span>
-          </nav>
+          </nav> */}
         </div>
 
         {/* Center: Market Data */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-lg)' }}>
+        <div style={{ display: 'flex', alignItems: 'left', gap: 'var(--spacing-lg)' }}>
           <div className="text-data-mono-sm">
             <span style={{ color: 'var(--text-secondary)' }}>NIFTY: </span>
             <span>24,852.15 </span>
@@ -41,14 +41,14 @@ export const LandingLayout = () => {
       </header>
       
       {/* Sub-header ticker band */}
-      <div style={{ padding: '6px var(--spacing-xl)', backgroundColor: 'var(--bg-canvas)', borderBottom: '1px solid var(--border-active)', display: 'flex', justifyContent: 'space-between' }}>
+      {/* <div style={{ padding: '6px var(--spacing-xl)', backgroundColor: 'var(--bg-canvas)', borderBottom: '1px solid var(--border-active)', display: 'flex', justifyContent: 'space-between' }}>
         <div className="text-data-mono-sm" style={{ color: 'var(--signal-accent)', fontSize: '10px' }}>
           &bull; SUB-SECOND CONSTITUENT ORDERFLOW DECOMPOSITION
         </div>
         <div className="text-data-mono-sm" style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
           NSE: NIFTY 50 - BANKNIFTY - FINNIFTY - BSE: SENSEX
         </div>
-      </div>
+      </div> */}
 
       <main style={{ flex: 1 }}>
         <Outlet />

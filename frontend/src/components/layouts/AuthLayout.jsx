@@ -24,7 +24,8 @@ export const AuthLayout = () => {
             <div style={{ width: '3px', height: '40%', backgroundColor: 'var(--signal-bullish)' }}></div>
           </div>
           <h1 className="text-headline-sm" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            TradeBot <span style={{ fontSize: '10px', padding: '2px 6px', backgroundColor: 'rgba(6, 182, 212, 0.1)', color: 'var(--signal-accent)', borderRadius: '4px', border: '1px solid var(--signal-accent)' }}>V4.1.8-PRO</span>
+            Index Pulze
+            {/* <span style={{ fontSize: '10px', padding: '2px 6px', backgroundColor: 'rgba(6, 182, 212, 0.1)', color: 'var(--signal-accent)', borderRadius: '4px', border: '1px solid var(--signal-accent)' }}>V4.1.8-PRO</span> */}
           </h1>
         </div>
       </div>
@@ -34,11 +35,11 @@ export const AuthLayout = () => {
       </main>
 
       {/* Auth Footer */}
-      <div style={{ textAlign: 'center', marginTop: 'var(--spacing-xl)', maxWidth: '520px' }}>
+      {/* <div style={{ textAlign: 'center', marginTop: 'var(--spacing-xl)', maxWidth: '520px' }}>
         <Link to={ROUTES.LANDING} style={{ color: 'var(--signal-accent)', textDecoration: 'none', display: 'inline-block', marginBottom: 'var(--spacing-xl)' }} className="text-body-sm">
           Explore live public indices in Read-Only Guest Mode &rarr;
         </Link>
-      </div>
+      </div> */}
 
     </div>
   );

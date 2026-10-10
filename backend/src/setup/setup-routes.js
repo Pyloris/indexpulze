@@ -7,7 +7,7 @@ const setupRoutes = (app) => {
     setupSwagger(app);
 
     // API Routes
-    app.use("/automations/api", router);
+    app.use("/api", router);
 
     // Global error handler
     app.use(errorHandler);

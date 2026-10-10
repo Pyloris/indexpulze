@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { BarChart2, Target, Activity, IndianRupee } from 'lucide-react';
 import { ConstituentRow } from './components/ConstituentRow';
 import { MetricBox } from './components/MetricBox';
 import { ChartWidget } from './components/ChartWidget';
@@ -106,6 +107,7 @@ export const Dashboard = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-md)' }}>
           <MetricBox 
             title="INDEX PCR (OI)" 
+            icon={BarChart2}
             badge="BULLISH" 
             badgeColor="var(--signal-bullish)" 
             mainValue="1.18" 
@@ -115,6 +117,7 @@ export const Dashboard = () => {
           />
           <MetricBox 
             title="MAX PAIN STRIKE" 
+            icon={Target}
             badge="WEEKLY EXP" 
             badgeColor="var(--text-muted)" 
             mainValue="24,800" 
@@ -125,6 +128,7 @@ export const Dashboard = () => {
           />
           <MetricBox 
             title="ATM IMPL. VOL (IV)" 
+            icon={Activity}
             badge="STABLE" 
             badgeColor="var(--text-secondary)" 
             mainValue="13.8%" 
@@ -135,6 +139,7 @@ export const Dashboard = () => {
           />
           <MetricBox 
             title="NET INDEX CASH FLOW" 
+            icon={IndianRupee}
             badge="FII + DII" 
             badgeColor="var(--signal-bullish)" 
             mainValue="+" 

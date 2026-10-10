@@ -78,13 +78,42 @@ export const ChartWidget = ({ index, timeframe }) => {
     // Adjust pane sizes
     chart.panes()[1].setHeight(100);
 
+    let currentBar = { ...data[data.length - 1] };
+    const interval = setInterval(() => {
+      // Simulate real-time updates
+      const tick = (Math.random() - 0.5) * 20;
+      currentBar.close += tick;
+      currentBar.high = Math.max(currentBar.high, currentBar.close);
+      currentBar.low = Math.min(currentBar.low, currentBar.close);
+
+      candleSeries.update(currentBar);
+      emaSeries.update({ time: currentBar.time, value: currentBar.close - 20 });
+      volumeSeries.update({
+        time: currentBar.time,
+        value: Math.floor(Math.random() * 10000) + 1000,
+        color: currentBar.close > currentBar.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'
+      });
+
+      // advance to a new bar occasionally
+      if (Math.random() > 0.95) {
+         currentBar = {
+           time: currentBar.time + 3600,
+           open: currentBar.close,
+           high: currentBar.close,
+           low: currentBar.close,
+           close: currentBar.close
+         };
+      }
+    }, 100);
+
     return () => {
+      clearInterval(interval);
       chart.remove();
     };
   }, [index, timeframe]);
 
   return (
-    <div className="surface-level-1" style={{ flex: 1, border: '1px solid var(--border-active)', borderRadius: 'var(--radius-md)', padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column' }}>
+    <div className="surface-level-1" style={{ flex: 1, minHeight: '400px', border: '1px solid var(--border-active)', borderRadius: 'var(--radius-md)', padding: 'var(--spacing-md)', display: 'flex', flexDirection: 'column' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
