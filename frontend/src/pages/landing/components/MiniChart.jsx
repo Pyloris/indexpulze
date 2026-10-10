@@ -1,38 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { createChart, CandlestickSeries, LineSeries } from 'lightweight-charts';
+import { useEffect, useRef, useState } from 'react';
+import { Chart } from '../../../components/ui/Chart';
 
 export const MiniChart = () => {
-  const chartContainerRef = useRef();
+  const chartRef = useRef(null);
 
-  useEffect(() => {
-    if (!chartContainerRef.current) return;
-    
-    const chart = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: 'solid', color: 'transparent' },
-        textColor: 'rgba(255, 255, 255, 0.5)',
-      },
-      grid: {
-        vertLines: { color: 'rgba(255, 255, 255, 0.02)' },
-        horzLines: { color: 'rgba(255, 255, 255, 0.02)' },
-      },
-      crosshair: { mode: 1 },
-      rightPriceScale: { visible: false },
-      timeScale: { visible: false },
-      handleScroll: false,
-      handleScale: false,
-      autoSize: true,
-    });
-
-    const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: '#22c55e',
-      downColor: '#ef4444',
-      borderVisible: false,
-      wickUpColor: '#22c55e',
-      wickDownColor: '#ef4444',
-    });
-
-    // Mock Data
+  const [initialSeries] = useState(() => {
     const data = [];
     let time = Math.floor(Date.now() / 1000) - 86400 * 30; // 30 days ago
     let price = 24700;
@@ -45,24 +17,62 @@ export const MiniChart = () => {
       price = close;
       data.push({ time, open, high, low, close });
     }
-    candleSeries.setData(data);
 
-    const emaSeries = chart.addSeries(LineSeries, {
-      color: '#06b6d4',
-      lineWidth: 1,
-      lineStyle: 2,
-    });
-    emaSeries.setData(data.map(d => ({ time: d.time, value: d.close - 20 })));
+    const emaData = data.map(d => ({ time: d.time, value: d.close - 20 }));
 
-    let currentBar = { ...data[data.length - 1] };
+    return [
+      {
+        id: 'candles',
+        type: 'candlestick',
+        data,
+        options: {
+          upColor: '#22c55e',
+          downColor: '#ef4444',
+          borderVisible: false,
+          wickUpColor: '#22c55e',
+          wickDownColor: '#ef4444',
+        }
+      },
+      {
+        id: 'ema',
+        type: 'line',
+        data: emaData,
+        options: {
+          color: '#06b6d4',
+          lineWidth: 1,
+          lineStyle: 2,
+        }
+      }
+    ];
+  });
+
+  const chartOptions = {
+    rightPriceScale: { visible: false },
+    timeScale: { visible: false },
+    handleScroll: false,
+    handleScale: false,
+  };
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    
+    // Fit content after chart is created
+    const chart = chartRef.current.getChart();
+    if (chart) {
+      chart.timeScale().fitContent();
+    }
+
+    const candleData = initialSeries[0].data;
+    let currentBar = { ...candleData[candleData.length - 1] };
+    
     const interval = setInterval(() => {
       const tick = (Math.random() - 0.5) * 20;
       currentBar.close += tick;
       currentBar.high = Math.max(currentBar.high, currentBar.close);
       currentBar.low = Math.min(currentBar.low, currentBar.close);
 
-      candleSeries.update(currentBar);
-      emaSeries.update({ time: currentBar.time, value: currentBar.close - 20 });
+      chartRef.current.updateSeries('candles', currentBar);
+      chartRef.current.updateSeries('ema', { time: currentBar.time, value: currentBar.close - 20 });
 
       if (Math.random() > 0.95) {
          currentBar = {
@@ -75,15 +85,12 @@ export const MiniChart = () => {
       }
     }, 100);
 
-    chart.timeScale().fitContent();
-
-    return () => {
-      clearInterval(interval);
-      chart.remove();
-    };
-  }, []);
+    return () => clearInterval(interval);
+  }, [initialSeries]);
 
   return (
-    <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
+    <div style={{ width: '100%', height: '100%' }}>
+      <Chart ref={chartRef} series={initialSeries} chartOptions={chartOptions} />
+    </div>
   );
 };
