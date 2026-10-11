@@ -12,5 +12,5 @@ setupApp(app, server);
 connectDatabase();
 
 server.listen(appConfig.PORT, () => {
-    console.log("Server running on port " + appConfig.PORT);
+    console.log(`Server up at ${appConfig.BASE_URL} on port ${appConfig.PORT}`)
 });
