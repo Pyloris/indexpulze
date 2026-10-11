@@ -6,7 +6,8 @@ const appConfig = {
 
     APP_NAME: Config.get("APP_NAME"),
 
-    BASE_URL: Config.get("API_URL"),
+    APP_URL: Config.get("APP_URL"),
+    API_URL: Config.get("API_URL"),
 
     PORT: Config.get("PORT", 8088),
 
