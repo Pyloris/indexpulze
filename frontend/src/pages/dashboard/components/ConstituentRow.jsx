@@ -4,7 +4,7 @@ export const ConstituentRow = ({ symbol, weight, price, change, changePct, vol, 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="text-data-mono-sm" style={{ fontWeight: 'bold' }}>{symbol}</span>
-          <span style={{ fontSize: '10px', backgroundColor: 'var(--bg-hover)', padding: '2px 4px', borderRadius: '4px', color: 'var(--text-muted)' }}>Wt {weight}</span>
+          <span style={{ fontSize: '10px', backgroundColor: 'var(--bg-hover)', padding: '2px 4px', borderRadius: '4px', color: 'var(--text-muted)' }}>Weight {weight}</span>
         </div>
         <div className="text-data-mono-sm">
           <span>{price} </span>

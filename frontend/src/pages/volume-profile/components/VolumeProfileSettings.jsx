@@ -41,24 +41,24 @@ export const VolumeProfileSettings = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       
       {/* Top row of settings */}
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-        <TabButton label="CONSTITUENT DELTA AGGREGATION" />
-        <TabButton label="COMBINED CASH & FUTURES" />
+      {/* <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}> */}
+        {/* <TabButton label="CONSTITUENT DELTA AGGREGATION" />
+        <TabButton label="COMBINED CASH & FUTURES" /> */}
         
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-ghost)' }}></div>
+        {/* <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-ghost)' }}></div> */}
         
-        <span className="text-label-caps" style={{ color: 'var(--text-muted)' }}>RANGE:</span>
-        <div style={{ display: 'flex', gap: '4px' }}>
+        {/* <span className="text-label-caps" style={{ color: 'var(--text-muted)' }}>RANGE:</span> */}
+        {/* <div style={{ display: 'flex', gap: '4px' }}>
           <TabButton label="INTRADAY VP" isActive={true} />
           <TabButton label="FIXED RANGE" />
           <TabButton label="3D COMPOSITE" />
           <TabButton label="EXPIRY-TO-DATE" />
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
 
       {/* Bottom row of settings */}
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      {/* <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}> */}
+        {/* <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span className="text-label-caps" style={{ color: 'var(--text-muted)' }}>ROW SIZE:</span>
           <TabButton label="5 PTS" />
           <TabButton label="10 PTS" isActive={true} />
@@ -72,11 +72,11 @@ export const VolumeProfileSettings = () => {
           <span style={{ color: 'var(--signal-bullish)' }}>VAH 24,865.00</span>
           <span style={{ color: 'var(--signal-accent)' }}>POC 24,825.50</span>
           <span style={{ color: '#ffb4ab' }}>VAL 24,780.00</span>
-        </div>
+        </div> */}
         
-        <div style={{ flex: 1 }}></div>
+        {/* <div style={{ flex: 1 }}></div> */}
 
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+        {/* <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <CheckboxItem label="BUY/SELL DELTA COLORS" checked={true} />
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <ColoredBox color="var(--signal-bullish)" />
@@ -86,8 +86,8 @@ export const VolumeProfileSettings = () => {
             <ColoredBox color="var(--color-error)" />
             <span className="text-label-caps" style={{ color: 'var(--text-secondary)' }}>ASK VOL</span>
           </div>
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
 
     </div>
   );

@@ -1,8 +1,33 @@
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Activity, LayoutGrid, List, BarChart2, Settings2 } from 'lucide-react';
-import { ROUTES } from '../../constants/routes';
+import { 
+  Home, 
+  Activity, 
+  LayoutGrid, 
+  List, 
+  BarChart2, 
+  Settings2,
+  PieChart,
+  Sliders,
+  TrendingUp,
+  User
+} from 'lucide-react';
+import { SIDEBAR_MENU_CONFIG } from '../../config/menu.config';
 
-const NavItem = ({ to, icon, label, isActive }) => {
+const ICON_MAP = {
+  Home,
+  Activity,
+  LayoutGrid,
+  List,
+  BarChart2,
+  Settings2,
+  PieChart,
+  Sliders,
+  TrendingUp,
+  User
+};
+
+const NavItem = ({ to, icon: IconComponent, label, isActive }) => {
   return (
     <Link 
       to={to} 
@@ -18,14 +43,27 @@ const NavItem = ({ to, icon, label, isActive }) => {
         transition: 'all 0.2s ease'
       }}
     >
-      <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>
-      <span className="text-body-sm" style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{label}</span>
+      {IconComponent && (
+        <span style={{ display: 'flex', alignItems: 'center' }}>
+          <IconComponent size={18} />
+        </span>
+      )}
+      <span className="text-body-sm" style={{ fontWeight: isActive ? 'bold' : 'normal' }}>
+        {label}
+      </span>
     </Link>
   );
 };
 
 export const Sidebar = () => {
   const location = useLocation();
+
+  const isItemActive = (item) => {
+    if (item.matchPaths && Array.isArray(item.matchPaths)) {
+      return item.matchPaths.includes(location.pathname);
+    }
+    return location.pathname === item.to;
+  };
   
   return (
     <aside className="surface-level-1" style={{ width: '240px', borderRight: '1px solid var(--border-active)', display: 'flex', flexDirection: 'column' }}>
@@ -40,32 +78,17 @@ export const Sidebar = () => {
         <span className="text-headline-sm" style={{ letterSpacing: '1px', fontSize: '14px' }}>PULSE CORE</span>
       </div>
 
-      {/* Nav */}
+      {/* Nav dynamically rendered from menu.config.js */}
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <NavItem 
-          to={ROUTES.DASHBOARD} 
-          icon={<Home size={18} />} 
-          label="Overview" 
-          isActive={location.pathname === ROUTES.APP || location.pathname === ROUTES.APP + '/' || location.pathname === '/app/dashboard'} 
-        />
-        <NavItem 
-          to={ROUTES.TREEMAP} 
-          icon={<LayoutGrid size={18} />} 
-          label="Constituent Treemap" 
-          isActive={location.pathname === ROUTES.TREEMAP || location.pathname === ROUTES.TREEMAP + '/'} 
-        />
-        <NavItem 
-          to={ROUTES.VOLUME_PROFILE} 
-          icon={<BarChart2 size={18} />} 
-          label="Volume Profile" 
-          isActive={location.pathname === ROUTES.VOLUME_PROFILE || location.pathname === ROUTES.VOLUME_PROFILE + '/'} 
-        />
-        <NavItem 
-          to={ROUTES.SETTINGS} 
-          icon={<Settings2 size={18} />} 
-          label="Settings" 
-          isActive={location.pathname === ROUTES.SETTINGS || location.pathname === ROUTES.SETTINGS + '/'} 
-        />
+        {SIDEBAR_MENU_CONFIG.map((item) => (
+          <NavItem 
+            key={item.id}
+            to={item.to} 
+            icon={ICON_MAP[item.icon] || Home} 
+            label={item.label} 
+            isActive={isItemActive(item)} 
+          />
+        ))}
       </nav>
 
       {/* Footer Metrics */}

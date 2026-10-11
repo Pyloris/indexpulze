@@ -46,9 +46,9 @@ export const ChartWidget = ({ index, timeframe }) => {
   ]);
 
   useEffect(() => {
-    if (!tickerPayload?.data || !chartRef.current) return;
+    if (!tickerPayload?.data?.data || !chartRef.current) return;
 
-    const data = tickerPayload.data;
+    const data = tickerPayload.data.data;
     
     // Transform incoming array into LWC point formats
     const candles = data.map(d => ({
