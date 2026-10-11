@@ -1,15 +1,15 @@
-import { 
-  subscribeMessageSchema, 
-  unsubscribeMessageSchema, 
-  pingMessageSchema, 
-  authMessageSchema, 
-  listSubscriptionsSchema 
+import {
+  subscribeMessageSchema,
+  unsubscribeMessageSchema,
+  pingMessageSchema,
+  authMessageSchema,
+  listSubscriptionsSchema
 } from '../protocol/schemas.js';
 import { ClientOps, ErrorCodes } from '../protocol/constants.js';
-import { 
-  createErrorResponse, 
-  createSubscriptionAck, 
-  createPongResponse 
+import {
+  createErrorResponse,
+  createSubscriptionAck,
+  createPongResponse
 } from '../protocol/messages.js';
 import { ConnectionAuthenticator } from '../core/ConnectionAuthenticator.js';
 import { metricsCollector } from '../core/MetricsCollector.js';
@@ -123,12 +123,7 @@ export class MessageRouter {
       return;
     }
 
-    // Authentication check before subscription access
-    if (!session.isAuthenticated()) {
-      session.send(createErrorResponse(value.requestId, ErrorCodes.UNAUTHORIZED, 'Authentication required before subscribing to channels.'));
-      return;
-    }
-
+    // Delegate channel validation and authorization to SubscriptionManager
     const results = this.subscriptionManager.subscribe(session, value.channels);
     session.send(createSubscriptionAck(value.requestId, results));
   }

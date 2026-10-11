@@ -14,6 +14,8 @@ export class SimulatedMarketDataProvider extends MarketDataProvider {
     this.instruments = new Map([
       ['NIFTY', { price: 24832.0, volume: 15420, open: 24700, high: 24868, low: 24680, close: 24832 }],
       ['BANKNIFTY', { price: 51320.0, volume: 22100, open: 51200, high: 51450, low: 51150, close: 51320 }],
+      ['SENSEX', { price: 81765.20, volume: 38200, open: 81350.0, high: 81920.0, low: 81310.0, close: 81765.20 }],
+      ['MID_SELECT', { price: 13150.0, volume: 19400, open: 13080.0, high: 13220.0, low: 13050.0, close: 13150.0 }],
       ['RELIANCE', { price: 2994.0, volume: 8900, open: 2980, high: 3010, low: 2975, close: 2994 }],
       ['HDFCBANK', { price: 1681.0, volume: 14200, open: 1665, high: 1690, low: 1660, close: 1681 }]
     ]);
@@ -63,7 +65,8 @@ export class SimulatedMarketDataProvider extends MarketDataProvider {
 
   generateTickCycle() {
     for (const [symbol, state] of this.instruments.entries()) {
-      const delta = (Math.random() - 0.49) * (symbol === 'BANKNIFTY' ? 12 : 5);
+      const deltaScale = symbol === 'SENSEX' ? 20 : (symbol === 'BANKNIFTY' ? 12 : (symbol === 'MID_SELECT' ? 4 : 5));
+      const delta = (Math.random() - 0.49) * deltaScale;
       state.price = Number((state.price + delta).toFixed(2));
       state.high = Math.max(state.high, state.price);
       state.low = Math.min(state.low, state.price);
@@ -87,10 +90,9 @@ export class SimulatedMarketDataProvider extends MarketDataProvider {
           side: delta >= 0 ? 'buy' : 'sell'
         }
       });
-      this.emit('event', `market.tick:${symbol}`, tickEvent);
 
       // 2. Emit quote event
-      const spread = symbol === 'BANKNIFTY' ? 1.0 : 0.25;
+      const spread = symbol === 'SENSEX' ? 2.5 : (symbol === 'BANKNIFTY' ? 1.0 : (symbol === 'MID_SELECT' ? 0.5 : 0.25));
       const quoteEvent = createMarketEvent({
         type: ServerEventTypes.MARKET_QUOTE,
         symbol,
@@ -105,7 +107,6 @@ export class SimulatedMarketDataProvider extends MarketDataProvider {
           totalVolume: state.volume
         }
       });
-      this.emit('event', `market.quote:${symbol}`, quoteEvent);
 
       // 3. Emit candle event
       const candleEvent = createMarketEvent({
@@ -124,7 +125,6 @@ export class SimulatedMarketDataProvider extends MarketDataProvider {
           isFinal: false
         }
       });
-      this.emit('event', `market.candle:${symbol}:15m`, candleEvent);
 
       // 4. Emit order-book depth
       const depthEvent = createMarketEvent({
@@ -146,10 +146,38 @@ export class SimulatedMarketDataProvider extends MarketDataProvider {
           isSnapshot: false
         }
       });
-      this.emit('event', `market.depth:${symbol}`, depthEvent);
+
+      const emitForAliases = (channelPrefix, payload, modifier = '') => {
+        const fullChannel = modifier ? `${channelPrefix}:${symbol}:${modifier}` : `${channelPrefix}:${symbol}`;
+        this.emit('event', fullChannel, payload);
+
+        // Alias NIFTY -> NIFTY_50, NIFTY50
+        if (symbol === 'NIFTY') {
+          for (const alias of ['NIFTY_50', 'NIFTY50']) {
+            const aliasPayload = { ...payload, symbol: alias };
+            const aliasChannel = modifier ? `${channelPrefix}:${alias}:${modifier}` : `${channelPrefix}:${alias}`;
+            this.emit('event', aliasChannel, aliasPayload);
+          }
+        } else if (symbol === 'BANKNIFTY') {
+          const aliasPayload = { ...payload, symbol: 'BANK_NIFTY' };
+          const aliasChannel = modifier ? `${channelPrefix}:BANK_NIFTY:${modifier}` : `${channelPrefix}:BANK_NIFTY`;
+          this.emit('event', aliasChannel, aliasPayload);
+        } else if (symbol === 'MID_SELECT') {
+          for (const alias of ['MIDCPNIFTY', 'MIDSELECT', 'MID_CP_NIFTY']) {
+            const aliasPayload = { ...payload, symbol: alias };
+            const aliasChannel = modifier ? `${channelPrefix}:${alias}:${modifier}` : `${channelPrefix}:${alias}`;
+            this.emit('event', aliasChannel, aliasPayload);
+          }
+        }
+      };
+
+      emitForAliases('market.tick', tickEvent);
+      emitForAliases('market.quote', quoteEvent);
+      emitForAliases('market.candle', candleEvent, '15m');
+      emitForAliases('market.depth', depthEvent);
 
       // 5. Emit index analytics for index instruments
-      if (symbol === 'NIFTY' || symbol === 'BANKNIFTY') {
+      if (symbol === 'NIFTY' || symbol === 'BANKNIFTY' || symbol === 'SENSEX' || symbol === 'MID_SELECT') {
         const analyticsEvent = createMarketEvent({
           type: ServerEventTypes.INDEX_ANALYTICS,
           symbol,
@@ -169,7 +197,7 @@ export class SimulatedMarketDataProvider extends MarketDataProvider {
             ]
           }
         });
-        this.emit('event', `index.analytics:${symbol}`, analyticsEvent);
+        emitForAliases('index.analytics', analyticsEvent);
       }
     }
   }

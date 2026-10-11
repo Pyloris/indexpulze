@@ -1,5 +1,5 @@
 import { baseApi } from './base-api';
-import { appConfig } from '../config/app-config';
+import { websocketClient } from './websocket-client';
 
 export const dataApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -12,40 +12,82 @@ export const dataApi = baseApi.injectEndpoints({
         return url;
       },
       async onCacheEntryAdded(arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
-        // create a websocket connection when the cache subscription starts
-        const ws = new WebSocket(appConfig.WS_URL);
+        const unsubs = [];
 
         try {
-          // wait for the initial query to resolve before processing WS updates
+          // Wait for initial REST HTTP query to resolve before applying live socket updates
           await cacheDataLoaded;
 
-          ws.addEventListener('message', (event) => {
-            const message = JSON.parse(event.data);
-            
-            if (message.type === 'TICKER' && message.symbol === arg.symbol) {
+          const symbol = arg.symbol;
+          const tf = arg.timeframe || '15m';
+
+          // Handler for typed events
+          const handleMarketEvent = (message) => {
+            if (!message || !message.data) return;
+
+            // 1. Handle live candle updates
+            if (message.type === 'market.candle') {
               updateCachedData((draft) => {
-                // draft is the payload structure { symbol, timeframe, data: [...] }
-                const lastBar = draft.data[draft.data.length - 1];
+                if (!draft || !draft.data || !Array.isArray(draft.data)) return;
                 const incomingBar = message.data;
+                const lastBar = draft.data[draft.data.length - 1];
 
                 if (lastBar && lastBar.timestamp === incomingBar.timestamp) {
-                  // update existing bar
-                  draft.data[draft.data.length - 1] = incomingBar;
-                } else {
-                  // append new bar
+                  draft.data[draft.data.length - 1] = {
+                    ...lastBar,
+                    ...incomingBar
+                  };
+                } else if (!lastBar || incomingBar.timestamp > lastBar.timestamp) {
                   draft.data.push(incomingBar);
                 }
               });
             }
-          });
+
+            // 2. Handle sub-second execution ticks
+            if (message.type === 'market.tick') {
+              updateCachedData((draft) => {
+                if (!draft || !draft.data || draft.data.length === 0) return;
+                const lastBar = draft.data[draft.data.length - 1];
+                const tick = message.data;
+                
+                if (tick && tick.price !== undefined) {
+                  lastBar.close = tick.price;
+                  lastBar.high = Math.max(lastBar.high, tick.price);
+                  lastBar.low = Math.min(lastBar.low, tick.price);
+                  if (tick.quantity) {
+                    lastBar.volume = (lastBar.volume || 0) + tick.quantity;
+                  }
+                }
+              });
+            }
+          };
+
+          // Determine symbols to subscribe (include aliases like NIFTY for NIFTY_50)
+          const symbols = [symbol];
+          if (symbol === 'NIFTY_50' || symbol === 'NIFTY50') symbols.push('NIFTY');
+          if (symbol === 'BANK_NIFTY') symbols.push('BANKNIFTY');
+
+          for (const s of symbols) {
+            // Subscribe to candle channel
+            unsubs.push(websocketClient.subscribe(`market.candle:${s}:${tf}`, handleMarketEvent));
+            // Subscribe to tick channel (active when authenticated)
+            unsubs.push(websocketClient.subscribe(`market.tick:${s}`, handleMarketEvent));
+          }
         } catch (error) {
-          console.error("RTK Query streaming error:", error);
+          console.error('[RTK Query] Live streaming setup error:', error);
         }
 
-        // cacheEntryRemoved will resolve when the cache subscription is no longer active
+        // Wait until query is unsubscribed from all components
         await cacheEntryRemoved;
-        // perform cleanup steps once the `cacheEntryRemoved` promise resolves
-        ws.close();
+
+        // Clean up subscriptions from shared singleton WebSocket connection
+        for (const unsub of unsubs) {
+          try {
+            unsub();
+          } catch (e) {
+            // ignore
+          }
+        }
       },
     }),
   }),

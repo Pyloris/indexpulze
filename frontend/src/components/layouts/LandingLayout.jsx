@@ -79,14 +79,14 @@ export const LandingLayout = () => {
             </h1>
           </div>
           
-          <div className="text-data-mono-sm" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+          {/* <div className="text-data-mono-sm" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'var(--signal-bullish)' }}></span>
             <span style={{ color: 'var(--signal-bullish)' }}>NSE: +0.58 (TICK)</span>
-          </div>
+          </div> */}
 
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }} className="hidden sm:block">
+          {/* <div style={{ fontSize: '11px', color: 'var(--text-muted)' }} className="hidden sm:block">
             Nifty 50, FinNifty
-          </div>
+          </div> */}
         </div>
 
         {/* Center: Interactive Navigation Links */}

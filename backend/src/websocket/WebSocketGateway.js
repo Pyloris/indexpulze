@@ -126,9 +126,19 @@ export class WebSocketGateway {
       // Perform authentication check during handshake
       const { user, token, error } = ConnectionAuthenticator.authenticateUpgrade(request);
 
+      // If client explicitly sent a token that failed verification, reject upgrade with 401
+      if (token && error) {
+        console.warn(`[WebSocketGateway] Handshake rejected due to invalid token: ${error}`);
+        socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n');
+        socket.destroy();
+        metricsCollector.recordRejection();
+        return;
+      }
+
+      // Allow upgrade for both authenticated users and unauthenticated/anonymous clients
       this.wss.handleUpgrade(request, socket, head, (ws) => {
-        // Attach authenticated user identity to WS instance for connection handler
-        ws._authenticatedUser = user;
+        // Attach authenticated user identity (or null for unauthenticated guests)
+        ws._authenticatedUser = user || null;
         this.wss.emit('connection', ws, request);
       });
     } catch (err) {

@@ -81,24 +81,38 @@ async function runTestSuite() {
       ws.close();
     });
 
-    // 2. Reject unauthorized subscriptions when connected without token
-    await test('2. Rejection of subscriptions on unauthenticated connection', async () => {
+    // 2. Support unauthenticated connections with public index updates, but reject private ticks/analytics
+    await test('2. Unauthenticated connection: allows index updates, rejects tick data without auth', async () => {
       const ws = new WebSocket(`ws://127.0.0.1:${TEST_PORT}/ws`);
-      await waitForMessage(ws, m => m.type === ServerEventTypes.CONNECTION_ACK);
+      const ack = await waitForMessage(ws, m => m.type === ServerEventTypes.CONNECTION_ACK);
+      assert.strictEqual(ack.type, 'connection.ack');
+      assert.strictEqual(ack.user, null); // Unauthenticated connection
 
+      // Attempt subscribing to both public index quote and auth-restricted tick
+      const subAckPromise = waitForMessage(ws, m => m.type === ServerEventTypes.SUBSCRIPTION_ACK);
       ws.send(JSON.stringify({
         op: ClientOps.SUBSCRIBE,
-        requestId: 'req-unauth',
-        channels: ['market.tick:NIFTY']
+        requestId: 'req-unauth-test',
+        channels: ['market.quote:NIFTY', 'market.tick:NIFTY']
       }));
 
-      const err = await waitForMessage(ws, m => m.type === ServerEventTypes.SYSTEM_ERROR);
-      assert.strictEqual(err.error.code, ErrorCodes.UNAUTHORIZED);
+      const subAck = await subAckPromise;
+      assert.strictEqual(subAck.requestId, 'req-unauth-test');
+      
+      const quoteRes = subAck.results.find(r => r.channel === 'market.quote:NIFTY');
+      const tickRes = subAck.results.find(r => r.channel === 'market.tick:NIFTY');
+
+      // Public index quote allowed without authentication
+      assert.strictEqual(quoteRes.status, 'subscribed');
+      // Tick data rejected with UNAUTHORIZED
+      assert.strictEqual(tickRes.status, 'rejected');
+      assert.strictEqual(tickRes.code, ErrorCodes.UNAUTHORIZED);
+
       ws.close();
     });
 
-    // 3. Application-level Auth Op
-    await test('3. In-band authentication via op: "auth"', async () => {
+    // 3. Application-level Auth Op grants access to tick data
+    await test('3. In-band authentication via op: "auth" unlocks tick data and analytics', async () => {
       const ws = new WebSocket(`ws://127.0.0.1:${TEST_PORT}/ws`);
       await waitForMessage(ws, m => m.type === ServerEventTypes.CONNECTION_ACK);
 
@@ -110,6 +124,21 @@ async function runTestSuite() {
 
       const authAck = await waitForMessage(ws, m => m.type === 'auth.ack');
       assert.strictEqual(authAck.user.username, 'trader_pro');
+
+      // Now subscribe to tick data after authenticating
+      ws.send(JSON.stringify({
+        op: ClientOps.SUBSCRIBE,
+        requestId: 'req-sub-authed',
+        channels: ['market.tick:NIFTY', 'index.analytics:NIFTY']
+      }));
+
+      const subAck = await waitForMessage(ws, m => m.type === ServerEventTypes.SUBSCRIPTION_ACK);
+      const tickRes = subAck.results.find(r => r.channel === 'market.tick:NIFTY');
+      const analyticsRes = subAck.results.find(r => r.channel === 'index.analytics:NIFTY');
+
+      assert.strictEqual(tickRes.status, 'subscribed');
+      assert.strictEqual(analyticsRes.status, 'subscribed');
+
       ws.close();
     });
 

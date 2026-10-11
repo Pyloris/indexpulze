@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
+import { websocketClient } from '../services/websocket-client';
 
 export const AuthContext = createContext();
 
@@ -14,6 +15,10 @@ export const AuthProvider = ({ children }) => {
       setToken(storedToken);
       // In a real app, validate token or fetch user profile
       setUser({ username: 'trader' }); 
+      websocketClient.connect(storedToken);
+    } else {
+      // Connect unauthenticated to stream public index updates (landing page etc.)
+      websocketClient.connect();
     }
     setIsLoading(false);
   }, []);
@@ -22,12 +27,14 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     setToken(authToken);
     localStorage.setItem('token', authToken);
+    websocketClient.authenticate(authToken);
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
+    websocketClient.clearAuth();
   };
 
   const value = {
