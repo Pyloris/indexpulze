@@ -6,6 +6,8 @@ const appConfig = {
 
     APP_NAME: Config.get("APP_NAME"),
 
+    BASE_URL: Config.get("API_URL"),
+
     PORT: Config.get("PORT", 8088),
 
     MONGODB_USER: Config.get("MONGODB_USER"),
