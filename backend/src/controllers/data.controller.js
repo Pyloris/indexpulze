@@ -1,29 +1,27 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
+import { catchError } from '../errors/catch-error.js';
+import { ApiResponse } from '../utils/api-response.js';
 
-export const getTickerData = (req, res) => {
-  const { symbol } = req.params;
-  const { from, timeframe = '15m' } = req.query;
+export class DataController {
+  static getTickerData = catchError(async (req, res, next) => {
+    const { symbol } = req.params;
+    const { from, timeframe = '15m' } = req.query;
 
-  try {
-    // Reading from the new mock file with 30-day historical data
     const mockFilePath = path.join(process.cwd(), 'src/mock/old-data-upto-ticker-any-symbol.json');
-    const fileContent = fs.readFileSync(mockFilePath, 'utf-8');
+    const fileContent = await fs.readFile(mockFilePath, 'utf-8');
     const mockData = JSON.parse(fileContent).data;
 
     let filteredData = mockData;
     if (from) {
       const fromTimestamp = Number(from);
-      filteredData = mockData.filter(d => d.timestamp >= fromTimestamp);
+      filteredData = mockData.filter((d) => d.timestamp >= fromTimestamp);
     }
 
-    res.json({
+    return ApiResponse.success(res, {
       symbol,
       timeframe,
       data: filteredData
-    });
-  } catch (error) {
-    console.error('Error reading mock data:', error);
-    res.status(500).json({ error: 'Failed to fetch data' });
-  }
-};
+    }, "Data retrieved successfully");
+  });
+}

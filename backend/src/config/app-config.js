@@ -29,6 +29,14 @@ const appConfig = {
 
 
     JWT_SECRET: Config.get("JWT_SECRET", "supersecretjwtkey"),
+
+    // WebSocket & Redis Distribution Settings
+    WS_PATH: Config.get("WS_PATH", "/ws"),
+    WS_HEARTBEAT_MS: Number(Config.get("WS_HEARTBEAT_MS", 30000)),
+    WS_MAX_SUBSCRIPTIONS: Number(Config.get("WS_MAX_SUBSCRIPTIONS", 100)),
+    REDIS_HOST: Config.get("REDIS_HOST", null),
+    REDIS_PORT: Number(Config.get("REDIS_PORT", 6379)),
+    REDIS_PASSWORD: Config.get("REDIS_PASSWORD", null),
 }
 
 

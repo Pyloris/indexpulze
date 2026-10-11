@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node src/scripts/test-websocket.js",
+    "test:ws": "node src/scripts/test-websocket.js",
+    "benchmark:ws": "node src/scripts/benchmark-websocket.js",
     "dev": "pm2 start ecosystem.config.cjs"
   },
   "repository": {

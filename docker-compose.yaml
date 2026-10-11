@@ -3,7 +3,7 @@ version: "3.9"
 services:
   questdb:
     image: questdb/questdb:latest
-    container_name: questdb
+    container_name: quest_db
     restart: always
     ports:
       - "${QUESTDB_PORT_PG:-8812}:8812" # Postgres wire protocol
@@ -18,7 +18,7 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongo_db
     restart: always
     ports:
       - "${MONGODB_PORT:-27017}:27017"
@@ -28,6 +28,17 @@ services:
     volumes:
       - mongodb_data:/data/db
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
 volumes:
   questdb_data:
   mongodb_data:
+  redis_data:
