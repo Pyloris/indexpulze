@@ -6,7 +6,7 @@ import { ChannelRegistry } from './subscription/ChannelRegistry.js';
 import { SubscriptionManager } from './subscription/SubscriptionManager.js';
 import { MessageRouter } from './routing/MessageRouter.js';
 import { MarketEventRouter } from './routing/MarketEventRouter.js';
-import { SimulatedMarketDataProvider } from './provider/SimulatedMarketDataProvider.js';
+import { FyersMarketDataProvider } from './provider/FyersMarketDataProvider.js';
 import { InMemoryDistributionAdapter } from './distribution/InMemoryDistributionAdapter.js';
 import { RedisDistributionAdapter } from './distribution/RedisDistributionAdapter.js';
 import { createConnectionAck } from './protocol/messages.js';
@@ -46,8 +46,8 @@ export class WebSocketGateway {
       this.distributionAdapter = new InMemoryDistributionAdapter();
     }
 
-    // Upstream market data provider
-    this.marketDataProvider = options.marketDataProvider || new SimulatedMarketDataProvider();
+    // Upstream market data provider (Fyers Live Market Data)
+    this.marketDataProvider = options.marketDataProvider || new FyersMarketDataProvider();
 
     this.wss = null;
     this.heartbeatTimer = null;
@@ -79,12 +79,20 @@ export class WebSocketGateway {
       this.marketEventRouter.route(channel, event, isCoalescable);
     });
 
-    // 3. Forward subscription interest changes to distribution adapter
+    // 3. Forward subscription interest changes to distribution adapter and upstream broker
     this.subscriptionManager.onChannelActive((channel) => {
       this.distributionAdapter.subscribeChannel(channel);
+      const parts = channel.split(':');
+      if (parts[1]) {
+        this.marketDataProvider.subscribeInstrument(parts[1]);
+      }
     });
     this.subscriptionManager.onChannelIdle((channel) => {
       this.distributionAdapter.unsubscribeChannel(channel);
+      const parts = channel.split(':');
+      if (parts[1]) {
+        this.marketDataProvider.unsubscribeInstrument(parts[1]);
+      }
     });
 
     // 4. Connect upstream market data provider to distribution adapter

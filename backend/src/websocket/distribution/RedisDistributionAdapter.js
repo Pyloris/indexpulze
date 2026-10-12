@@ -29,6 +29,13 @@ export class RedisDistributionAdapter extends EventEmitter {
       this.publisher = new Redis(this.redisConfig);
       this.subscriber = new Redis(this.redisConfig);
 
+      this.publisher.on('error', (err) => {
+        console.warn('[RedisDistributionAdapter] Publisher Redis error:', err.message);
+      });
+      this.subscriber.on('error', (err) => {
+        console.warn('[RedisDistributionAdapter] Subscriber Redis error:', err.message);
+      });
+
       await Promise.all([this.publisher.connect(), this.subscriber.connect()]);
 
       this.subscriber.on('message', (channel, message) => {

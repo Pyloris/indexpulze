@@ -27,13 +27,16 @@ const appConfig = {
     QUESTDB_USER: Config.get("QUESTDB_USER", "admin"),
     QUESTDB_PASS: Config.get("QUESTDB_PASS", "quest"),
 
+    STORAGE_PATH: Config.get("STORAGE_PATH"),
+    APP_UPSTREAM_TOKEN_FILE: Config.get("STORAGE_PATH") + "/upstream_creds.json",
 
     JWT_SECRET: Config.get("JWT_SECRET", "supersecretjwtkey"),
 
 
     FYERS_APP_ID: Config.get("FYERS_APP_ID", ""),
-    FYERS_SECRET_ID: Config.get("FYERS_SECRET_KEY", ""),
+    FYERS_SECRET_ID: Config.get("FYERS_SECRET_ID") || Config.get("FYERS_SECRET_KEY", ""),
     FYERS_PIN: Config.get("FYERS_PIN", ""),
+    FYERS_REDIRECT_URI: Config.get("FYERS_REDIRECT_URI"),
 
     // WebSocket & Redis Distribution Settings
     WS_PATH: Config.get("WS_PATH", "/ws"),
