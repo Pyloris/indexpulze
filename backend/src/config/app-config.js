@@ -30,6 +30,11 @@ const appConfig = {
 
     JWT_SECRET: Config.get("JWT_SECRET", "supersecretjwtkey"),
 
+
+    FYERS_APP_ID: Config.get("FYERS_APP_ID", ""),
+    FYERS_SECRET_ID: Config.get("FYERS_SECRET_KEY", ""),
+    FYERS_PIN: Config.get("FYERS_PIN", ""),
+
     // WebSocket & Redis Distribution Settings
     WS_PATH: Config.get("WS_PATH", "/ws"),
     WS_HEARTBEAT_MS: Number(Config.get("WS_HEARTBEAT_MS", 30000)),
