@@ -21,6 +21,6 @@ router.get("/v1/metrics", async (req, res) => {
 
 router.use("/v1/auth", authRoutes);
 router.use("/v1/data", authMiddleware, dataRoutes);
-router.use("/webhooks", webhookRoutes);
+router.use("/v1/webhooks", webhookRoutes);
 
 export { router };
