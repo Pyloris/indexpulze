@@ -3,11 +3,12 @@ import { IndexHeaderBox } from './components/IndexHeaderBox';
 import { VolumeProfileSettings } from './components/VolumeProfileSettings';
 import { OrderExecutionPanel } from './components/OrderExecutionPanel';
 import { VolumeProfileChart } from './components/VolumeProfileChart';
-import { MARKET_INDICES } from '../../constants/market';
+import { useIndices } from '../../context/indices-context';
 
 export const VolumeProfile = () => {
   const [activeTab, setActiveTab] = useState('NIFTY 50');
-  const indices = MARKET_INDICES;
+  const { marketIndices } = useIndices();
+  const indices = marketIndices;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '16px' }}>

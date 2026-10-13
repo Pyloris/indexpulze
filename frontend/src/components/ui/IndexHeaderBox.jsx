@@ -44,7 +44,7 @@ export const IndexHeaderBox = ({ data, isActive, onClick, style = {}, className 
         />
       )}
       <span>{name}</span>
-      {value && (
+      {/* {value && (
         <span 
           className="text-data-mono-sm" 
           style={{ 
@@ -66,7 +66,7 @@ export const IndexHeaderBox = ({ data, isActive, onClick, style = {}, className 
         >
           {changePct}
         </span>
-      )}
+      )} */}
     </button>
   );
 };

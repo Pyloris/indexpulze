@@ -7,15 +7,14 @@ import { IndexParticipationCard } from './components/IndexParticipationCard';
 import { MaxPainOICard } from './components/MaxPainOICard';
 import { IndexHeaderBox } from '../../components/ui/IndexHeaderBox';
 import { useDashboardStore } from '../../stores/useDashboardStore';
-import { MARKET_INDICES } from '../../constants/market';
+import { useIndices } from '../../context/indices-context';
 
 export const Dashboard = () => {
   const { selectedIndex, setSelectedIndex, timeframe, setTimeframe, studies, toggleStudy } = useDashboardStore();
+  const { marketIndices } = useIndices();
   
-  const indices = MARKET_INDICES;
+  const indices = marketIndices;
   const timeframes = ['1m', '3m', '5m', '15m', '1H', '1D'];
-
-  const currentIndexData = indices.find(i => i.name === selectedIndex) || indices[0];
 
   return (
     <>

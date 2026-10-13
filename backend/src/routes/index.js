@@ -1,7 +1,7 @@
 import express from "express";
 import authRoutes from "./v1/auth.routes.js";
 import dataRoutes from "./v1/data.routes.js";
-import webhookRoutes from "./webhook.routes.js";
+import webhookRoutes from "./v1/webhook.routes.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 import { metricsCollector } from "../websocket/core/MetricsCollector.js";

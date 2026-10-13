@@ -33,12 +33,35 @@ export const Chart = forwardRef(({
     getSeries: (id) => seriesRefs.current[id],
     updateSeries: (id, dataPoint) => {
       const s = seriesRefs.current[id];
-      if (s) s.update(dataPoint);
+      if (s && dataPoint) {
+        try {
+          s.update(dataPoint);
+        } catch (err) {
+          console.warn(`[Chart] Failed to update series '${id}':`, err.message);
+        }
+      }
     },
     setSeriesData: (id, data) => {
       const s = seriesRefs.current[id];
-      if (s) s.setData(data);
-    }
+      if (s && Array.isArray(data)) {
+        try {
+          s.setData(data);
+          requestAnimationFrame(() => {
+            chartRef.current?.timeScale().scrollToRealTime();
+          });
+        } catch (err) {
+          console.warn(`[Chart] Failed to set data on series '${id}':`, err.message);
+        }
+      }
+    },
+    fitContent: () => {
+      if (chartRef.current) {
+        requestAnimationFrame(() => {
+          chartRef.current?.timeScale().scrollToRealTime();
+        });
+      }
+    },
+    timeScale: () => chartRef.current?.timeScale(),
   }));
 
   useEffect(() => {
@@ -55,7 +78,11 @@ export const Chart = forwardRef(({
       },
       crosshair: { mode: 1 },
       rightPriceScale: { borderColor: 'var(--border-ghost)' },
-      timeScale: { borderColor: 'var(--border-ghost)', timeVisible: true },
+      timeScale: {
+        borderColor: 'var(--border-ghost)',
+        timeVisible: true,
+        rightOffset: 25,
+      },
       autoSize: true,
       ...chartOptions,
     };
@@ -69,8 +96,12 @@ export const Chart = forwardRef(({
       const seriesId = s.id || index.toString();
       const createdSeries = chart.addSeries(SeriesClass, s.options || {}, s.pane || 0);
       
-      if (s.data) {
-        createdSeries.setData(s.data);
+      if (s.data && Array.isArray(s.data) && s.data.length > 0) {
+        try {
+          createdSeries.setData(s.data);
+        } catch (err) {
+          console.warn(`[Chart] Failed initial setData on series '${seriesId}':`, err.message);
+        }
       }
       
       seriesRefs.current[seriesId] = createdSeries;
@@ -78,9 +109,27 @@ export const Chart = forwardRef(({
 
     // Custom pane height assignments if any volume histogram exists
     if (chart.panes && chart.panes().length > 1) {
-       // Just a default helper for 2 panes
        chart.panes()[1].setHeight(100);
     }
+
+    // Scroll to latest data on next frame after initial render
+    requestAnimationFrame(() => {
+      chart.timeScale().scrollToRealTime();
+    });
+
+    // ResizeObserver ensures chart scrolls to real-time with margin once container dimensions are available
+    let initialFitDone = false;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          if (!initialFitDone) {
+            chart.timeScale().scrollToRealTime();
+            initialFitDone = true;
+          }
+        }
+      }
+    });
+    resizeObserver.observe(chartContainerRef.current);
 
     if (onCrosshairMove) {
       chart.subscribeCrosshairMove(onCrosshairMove);
@@ -90,11 +139,37 @@ export const Chart = forwardRef(({
     }
 
     return () => {
+      resizeObserver.disconnect();
       chart.remove();
       chartRef.current = null;
       seriesRefs.current = {};
     };
-  }, []); // Only run on mount, updates are handled imperatively for perf
+  }, []); // Chart creation lifecycle
+
+  // Handle updates to series data when the series prop changes
+  useEffect(() => {
+    if (!chartRef.current || !series || series.length === 0) return;
+
+    let hasData = false;
+    series.forEach((s, index) => {
+      const seriesId = s.id || index.toString();
+      const existingSeries = seriesRefs.current[seriesId];
+      if (existingSeries && Array.isArray(s.data) && s.data.length > 0) {
+        try {
+          existingSeries.setData(s.data);
+          hasData = true;
+        } catch (err) {
+          console.warn(`[Chart] Failed reactive setData on series '${seriesId}':`, err.message);
+        }
+      }
+    });
+
+    if (hasData) {
+      requestAnimationFrame(() => {
+        chartRef.current?.timeScale().scrollToRealTime();
+      });
+    }
+  }, [series]);
 
   return (
     <div ref={chartContainerRef} style={{ width: '100%', height }} />

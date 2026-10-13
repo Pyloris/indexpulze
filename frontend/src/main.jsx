@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { HelmetProvider } from 'react-helmet-async';
 import { store } from './store';
 import { AuthProvider } from './context/auth-context';
+import { IndicesProvider } from './context/indices-context';
 import { router } from './routes/routing-setup';
 import './index.css';
 
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')).render(
     <HelmetProvider>
       <Provider store={store}>
         <AuthProvider>
-          <RouterProvider router={router} />
+          <IndicesProvider>
+            <RouterProvider router={router} />
+          </IndicesProvider>
         </AuthProvider>
       </Provider>
     </HelmetProvider>

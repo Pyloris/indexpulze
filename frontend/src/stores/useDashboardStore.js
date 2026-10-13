@@ -10,7 +10,7 @@ export const useDashboardStore = create((set) => ({
   selectedIndex: 'NIFTY 50',
   setSelectedIndex: (index) => set({ selectedIndex: index }),
   
-  timeframe: '5m',
+  timeframe: '15m',
   setTimeframe: (tf) => set({ timeframe: tf }),
   
   studies: ['EMA 20/50', 'VOL PROF'],

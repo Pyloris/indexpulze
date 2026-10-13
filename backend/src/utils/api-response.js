@@ -30,4 +30,17 @@ export class ApiResponse {
     static created(res, data = {}, message = "Resource created successfully") {
         return ApiResponse.success(res, data, message, 201);
     }
+    /**
+     * Return an error response
+     * @param {Object} res - Express response object
+     * @param {string} message - Error message
+     * @param {number} statusCode - HTTP status code
+     */
+    static error(res, message = "Internal server error", statusCode = 500) {
+        return res.status(statusCode).json({
+            status: 0,
+            message,
+            data: {}
+        });
+    }
 }
