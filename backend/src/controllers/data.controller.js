@@ -1,6 +1,5 @@
-import fs from 'fs/promises';
-import path from 'path';
 import { adapter } from '../adapters/adapter.js';
+import { IndexCompositionService } from '../services/index-composition.service.js';
 import { catchError } from '../errors/catch-error.js';
 import { ApiResponse } from '../utils/api-response.js';
 
@@ -78,6 +77,32 @@ export class DataController {
     } catch (err) {
       console.warn(`[DataController] Adapter '${adapterType}' getQuotes failed: ${err.message}.`);
       return ApiResponse.error(res, err.message, err.statusCode || 500);
+    }
+  });
+
+  static getConstituents = catchError(async (req, res, next) => {
+    const { index } = req.params;
+    const adapterType = req.query.adapter || 'internal';
+    const baseIndexValue = req.query.base_value ? parseFloat(req.query.base_value) : undefined;
+
+    if (!index) {
+      return ApiResponse.error(res, "Index symbol parameter is required", 400);
+    }
+
+    try {
+      const result = await IndexCompositionService.getConstituentsWithContribution(index, {
+        adapterType,
+        baseIndexValue,
+      });
+
+      return ApiResponse.success(
+        res,
+        result,
+        `Index constituents for '${index}' retrieved successfully`
+      );
+    } catch (err) {
+      console.warn(`[DataController] getConstituents failed for index '${index}': ${err.message}`);
+      return ApiResponse.error(res, err.message, err.statusCode || 400);
     }
   });
 }

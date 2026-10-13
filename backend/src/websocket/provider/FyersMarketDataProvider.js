@@ -4,6 +4,9 @@ import { ServerEventTypes } from '../protocol/constants.js';
 import { createMarketEvent } from '../protocol/messages.js';
 import { appConfig } from '../../config/app-config.js';
 import { getStoredAccessToken } from '../../utils/token-storage.js';
+import { queueManager } from '../../services/queue-manager/queue-manager.js';
+import { QUEUE_NAMES } from '../../constants/queue-names.js';
+import { getAllIndexConstituents, getAllIndexSymbols } from '../../config/index-resolver.js';
 
 const { fyersDataSocket } = fyersPkg;
 
@@ -53,13 +56,22 @@ export class FyersMarketDataProvider extends MarketDataProvider {
     this.skt = null;
     this.seqCounter = 0;
 
+    // Build default instruments: all indices + all constituents of all indices
+    const defaultSymbols = new Set([
+      ...getAllIndexSymbols(),
+      ...getAllIndexConstituents(),
+      'NIFTY',
+      'BANKNIFTY',
+      'FINNIFTY',
+      'SENSEX',
+    ]);
+
     // Track active instruments
-    this.subscribedSymbols = new Set(
-      options.symbols || ['NIFTY', 'BANKNIFTY', 'SENSEX', 'RELIANCE', 'HDFCBANK']
-    );
+    this.subscribedSymbols = new Set(options.symbols || Array.from(defaultSymbols));
 
     // Cache of last state per symbol
     this.lastState = new Map();
+    this.isConnected = false;
   }
 
   /**
@@ -126,6 +138,7 @@ export class FyersMarketDataProvider extends MarketDataProvider {
 
       // Wire event listeners
       this.skt.on('connect', () => {
+        this.isConnected = true;
         console.log('[FyersMarketDataProvider] Connected to Fyers Data WebSocket successfully.');
         const symbolsToSub = [...this.subscribedSymbols].map((s) => this.toFyersSymbol(s));
         if (symbolsToSub.length > 0) {
@@ -139,10 +152,16 @@ export class FyersMarketDataProvider extends MarketDataProvider {
       });
 
       this.skt.on('error', (err) => {
+        // If it's a transient sub error while socket connects, log cleanly
+        if (err?.code === -99) {
+          console.warn('[FyersMarketDataProvider] Fyers Socket notice: subscription queued while reconnecting.');
+          return;
+        }
         console.error('[FyersMarketDataProvider] Fyers Socket Error:', err);
       });
 
       this.skt.on('close', () => {
+        this.isConnected = false;
         console.warn('[FyersMarketDataProvider] Fyers DataSocket closed.');
       });
 
@@ -187,6 +206,33 @@ export class FyersMarketDataProvider extends MarketDataProvider {
     const prev = this.lastState.get(fyersSymbol) || { price: ltp };
     const priceDelta = ltp - prev.price;
     this.lastState.set(fyersSymbol, { price: ltp, open, high, low, close, volume, ts: tickTs });
+
+    // Enqueue tick to tick-ingestor worker queue for asynchronous database persistence
+    queueManager.addJob(
+      QUEUE_NAMES.TICK_INGESTOR_QUEUE,
+      'ingest-tick',
+      {
+        symbol: fyersSymbol,
+        ltp,
+        vol_traded_today: volume,
+        exch_feed_time: msg.exch_feed_time || Math.floor(tickTs / 1000),
+        bid_price: msg.bid || msg.bid_price,
+        ask_price: msg.ask || msg.ask_price,
+        last_traded_qty: tickQty,
+        open_price: open,
+        high_price: high,
+        low_price: low,
+        prev_close_price: close,
+        type: msg.type || 'sf',
+      },
+      {
+        removeOnComplete: true,
+        removeOnFail: 1000,
+      }
+    ).catch((err) => {
+      // Non-blocking catch to prevent socket listener interruption
+      console.warn(`[FyersMarketDataProvider:Queue] Enqueuing tick failed for ${fyersSymbol}:`, err.message);
+    });
 
     this.seqCounter++;
     const aliases = this.getAliases(fyersSymbol);
@@ -274,7 +320,9 @@ export class FyersMarketDataProvider extends MarketDataProvider {
   subscribeInstrument(symbol) {
     if (!symbol) return;
     this.subscribedSymbols.add(symbol);
-    if (this.skt && typeof this.skt.subscribe === 'function') {
+    // Only dispatch subscribe call over wire if the socket is actively connected;
+    // otherwise it will be subscribed automatically inside the 'connect' event handler.
+    if (this.isConnected && this.skt && typeof this.skt.subscribe === 'function') {
       const fyersSymbol = this.toFyersSymbol(symbol);
       this.skt.subscribe([fyersSymbol]);
     }
@@ -287,7 +335,7 @@ export class FyersMarketDataProvider extends MarketDataProvider {
   unsubscribeInstrument(symbol) {
     if (!symbol) return;
     this.subscribedSymbols.delete(symbol);
-    if (this.skt && typeof this.skt.unsubscribe === 'function') {
+    if (this.isConnected && this.skt && typeof this.skt.unsubscribe === 'function') {
       const fyersSymbol = this.toFyersSymbol(symbol);
       this.skt.unsubscribe([fyersSymbol]);
     }
