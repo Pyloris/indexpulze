@@ -33,13 +33,14 @@ export function createSubscriptionAck(requestId, results) {
 /**
  * Creates a connection acknowledgement envelope
  */
-export function createConnectionAck(connectionId, user, limits) {
+export function createConnectionAck(connectionId, user, limits, authError = null) {
   return {
     type: ServerEventTypes.CONNECTION_ACK,
     version: PROTOCOL_VERSION,
     connectionId,
     ts: Date.now(),
     user: user ? { id: user.id || user._id, username: user.username } : null,
+    ...(authError ? { authError } : {}),
     limits: {
       maxSubscriptions: limits.maxSubscriptions,
       rateLimitPerSecond: limits.rateLimitPerSecond

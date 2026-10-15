@@ -15,7 +15,8 @@ export class RedisDistributionAdapter extends EventEmitter {
       port: redisConfig.port || 6379,
       password: redisConfig.password || undefined,
       lazyConnect: true,
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: null,
+      retryStrategy: (times) => Math.min(times * 100, 3000),
       ...redisConfig
     };
 

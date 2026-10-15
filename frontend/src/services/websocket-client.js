@@ -20,6 +20,19 @@ export const ServerEventTypes = Object.freeze({
   INDEX_ANALYTICS: 'index.analytics'
 });
 
+export function isTokenExpired(token) {
+  if (!token || typeof token !== 'string') return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const payload = JSON.parse(atob(parts[1]));
+    if (!payload.exp) return false;
+    return payload.exp * 1000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
 class WebSocketClient {
   constructor() {
     this.ws = null;
@@ -76,9 +89,15 @@ class WebSocketClient {
    */
   connect(token = null) {
     if (token) {
-      this.token = token;
+      this.token = isTokenExpired(token) ? null : token;
     } else if (!this.token && typeof localStorage !== 'undefined') {
-      this.token = localStorage.getItem('token') || null;
+      const stored = localStorage.getItem('token');
+      if (stored && isTokenExpired(stored)) {
+        localStorage.removeItem('token');
+        this.token = null;
+      } else {
+        this.token = stored || null;
+      }
     }
 
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
@@ -204,8 +223,12 @@ class WebSocketClient {
 
     // 3. Handle connection ack
     if (type === ServerEventTypes.CONNECTION_ACK) {
-      if (message.user) {
-        // Authenticated upgrade acknowledged
+      if (message.authError) {
+        console.warn('[WebSocketClient] Authentication notice from server:', message.authError);
+        this.token = null;
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('token');
+        }
       }
     }
   }

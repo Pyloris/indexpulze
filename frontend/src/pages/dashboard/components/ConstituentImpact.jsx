@@ -1,51 +1,116 @@
 import { useMemo } from 'react';
 import { ConstituentRow } from './ConstituentRow';
 import { useDashboardStore, CONSTITUENT_TABS } from '../../../stores/useDashboardStore';
+import { useGetConstituentsQuery } from '../../../services/data-api';
+import { toTicker } from '../../../constants/symbols';
 
-const CONSTITUENTS_DATA = [
-  { symbol: 'RELIANCE', weight: '9.8%', price: '₹2,985.40', changePct: '+2.45%', changeNum: 2.45, vol: '14.2M', volMult: '2.3x', volMultNum: 2.3, pts: '+42.1', isPositive: true },
-  { symbol: 'HDFCBANK', weight: '11.2%', price: '₹1,682.10', changePct: '+1.85%', changeNum: 1.85, vol: '22.8M', volMult: '1.8x', volMultNum: 1.8, pts: '+38.5', isPositive: true },
-  { symbol: 'BHARTIARTL', weight: '4.1%', price: '₹1,590.30', changePct: '+1.90%', changeNum: 1.90, vol: '6.8M', volMult: '1.6x', volMultNum: 1.6, pts: '+16.3', isPositive: true },
-  { symbol: 'ICICIBANK', weight: '7.9%', price: '₹1,240.50', changePct: '+1.40%', changeNum: 1.40, vol: '11.5M', volMult: '1.4x', volMultNum: 1.4, pts: '+22.0', isPositive: true },
-  { symbol: 'LT', weight: '3.8%', price: '₹3,620.00', changePct: '+0.95%', changeNum: 0.95, vol: '3.2M', volMult: '1.1x', volMultNum: 1.1, pts: '+7.4', isPositive: true },
-  { symbol: 'TCS', weight: '4.2%', price: '₹4,150.00', changePct: '-0.80%', changeNum: -0.80, vol: '4.1M', volMult: '0.7x', volMultNum: 0.7, pts: '-9.8', isPositive: false },
-  { symbol: 'INFY', weight: '5.8%', price: '₹1,875.20', changePct: '-1.15%', changeNum: -1.15, vol: '8.9M', volMult: '0.9x', volMultNum: 0.9, pts: '-14.2', isPositive: false },
-  { symbol: 'AXISBANK', weight: '3.5%', price: '₹1,162.30', changePct: '-1.45%', changeNum: -1.45, vol: '7.4M', volMult: '1.5x', volMultNum: 1.5, pts: '-11.2', isPositive: false },
-  { symbol: 'KOTAKBANK', weight: '3.2%', price: '₹1,745.00', changePct: '-1.80%', changeNum: -1.80, vol: '5.9M', volMult: '1.2x', volMultNum: 1.2, pts: '-13.5', isPositive: false },
-  { symbol: 'SBIN', weight: '2.9%', price: '₹798.50', changePct: '+0.45%', changeNum: 0.45, vol: '18.4M', volMult: '2.7x', volMultNum: 2.7, pts: '+5.1', isPositive: true },
-  { symbol: 'TATAMOTORS', weight: '2.5%', price: '₹962.10', changePct: '+3.10%', changeNum: 3.10, vol: '16.5M', volMult: '3.1x', volMultNum: 3.1, pts: '+12.8', isPositive: true }
-];
+// Format currency in INR style
+const formatCurrency = (val) => {
+  if (val === undefined || val === null || isNaN(Number(val))) return '₹0.00';
+  return `₹${Number(val).toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
+// Format volume in K/M/Cr
+const formatVolume = (vol) => {
+  if (!vol || isNaN(Number(vol)) || Number(vol) === 0) return null;
+  const num = Number(vol);
+  if (num >= 10000000) return `${(num / 10000000).toFixed(1)}Cr`;
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+  return String(num);
+};
+
+// Map store selectedIndex to backend index parameter
+const mapIndexToKey = (selectedIndex) => {
+  if (!selectedIndex) return 'nifty';
+  const s = String(selectedIndex).toLowerCase().trim();
+  if (s.includes('bank')) return 'banknifty';
+  if (s.includes('fin')) return 'finnifty';
+  if (s.includes('sensex')) return 'sensex';
+  return 'nifty';
+};
 
 export const ConstituentImpact = () => {
-  const { activeConstituentTab, setActiveConstituentTab } = useDashboardStore();
+  const { selectedIndex, activeConstituentTab, setActiveConstituentTab } = useDashboardStore();
+
+  const indexQueryParam = useMemo(() => mapIndexToKey(selectedIndex), [selectedIndex]);
+
+  // Fetch live index constituents data via RTK Query
+  const { data: constituentsResponse, isLoading, isError, error } = useGetConstituentsQuery(indexQueryParam);
 
   const tabs = [
     CONSTITUENT_TABS.TOP_GAINERS,
     CONSTITUENT_TABS.TOP_LOSERS,
-    CONSTITUENT_TABS.VOL_SHOCKERS
+    CONSTITUENT_TABS.VOL_SHOCKERS,
   ];
 
+  const payload = constituentsResponse?.data;
+  const rawConstituents = payload?.constituents;
+
+  const constituentsList = useMemo(() => {
+    if (!rawConstituents || !Array.isArray(rawConstituents)) {
+      return [];
+    }
+
+    return rawConstituents.map((item) => {
+      const displaySymbol = toTicker(item.symbol) || item.symbol;
+      const quote = item.quote || {};
+      const changeNum = Number(quote.changePercent || 0);
+      const pointsNum = Number(item.pointsContribution || 0);
+      const isPositive = pointsNum !== 0 ? pointsNum > 0 : changeNum >= 0;
+
+      const changeSign = changeNum > 0 ? '+' : '';
+      const changePct = `${changeSign}${changeNum.toFixed(2)}%`;
+
+      const ptsSign = pointsNum > 0 ? '+' : '';
+      const pts = `${ptsSign}${pointsNum.toFixed(2)}`;
+
+      const weightDisplay = item.weightPercent !== undefined
+        ? `${Number(item.weightPercent).toFixed(1)}%`
+        : `${(Number(item.weight || 0) * 100).toFixed(1)}%`;
+
+      const volFormatted = formatVolume(quote.volume);
+
+      return {
+        rawSymbol: item.symbol,
+        symbol: displaySymbol,
+        weight: weightDisplay,
+        weightVal: item.weightPercent || 0,
+        price: formatCurrency(quote.lastPrice),
+        changePct,
+        changeNum,
+        vol: volFormatted,
+        pts,
+        pointsNum,
+        isPositive,
+      };
+    });
+  }, [rawConstituents]);
+
   const displayedConstituents = useMemo(() => {
-    const list = [...CONSTITUENTS_DATA];
+    const list = [...constituentsList];
 
     if (activeConstituentTab === CONSTITUENT_TABS.TOP_GAINERS) {
       return list
-        .filter(item => item.changeNum > 0)
-        .sort((a, b) => b.changeNum - a.changeNum);
+        .filter((item) => item.changeNum > 0 || item.pointsNum > 0)
+        .sort((a, b) => b.pointsNum - a.pointsNum || b.changeNum - a.changeNum);
     }
 
     if (activeConstituentTab === CONSTITUENT_TABS.TOP_LOSERS) {
       return list
-        .filter(item => item.changeNum < 0)
-        .sort((a, b) => a.changeNum - b.changeNum);
+        .filter((item) => item.changeNum < 0 || item.pointsNum < 0)
+        .sort((a, b) => a.pointsNum - b.pointsNum || a.changeNum - b.changeNum);
     }
 
     if (activeConstituentTab === CONSTITUENT_TABS.VOL_SHOCKERS) {
-      return list.sort((a, b) => b.volMultNum - a.volMultNum);
+      return list.sort((a, b) => b.weightVal - a.weightVal);
     }
 
     return list;
-  }, [activeConstituentTab]);
+  }, [constituentsList, activeConstituentTab]);
 
   return (
     <div 
@@ -56,13 +121,26 @@ export const ConstituentImpact = () => {
         border: '1px solid var(--border-active)', 
         flex: 1, 
         display: 'flex', 
-        flexDirection: 'column' 
+        flexDirection: 'column',
+        maxHeight: '90vh',
       }}
     >
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-md)' }}>
         <h3 className="text-headline-sm">Constituent Impact</h3>
-        {/* <span className="text-label-caps" style={{ color: 'var(--text-muted)' }}>50 SYMBOLS</span> */}
+        {payload && (
+          <span className="text-label-caps" style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+            {payload.constituentCount || constituentsList.length} SYMBOLS
+            {payload.totalPointsContributed !== undefined && (
+              <span style={{ 
+                marginLeft: '8px', 
+                color: payload.totalPointsContributed >= 0 ? 'var(--signal-bullish)' : 'var(--signal-bearish)' 
+              }}>
+                ({payload.totalPointsContributed >= 0 ? '+' : ''}{payload.totalPointsContributed.toFixed(2)} pts)
+              </span>
+            )}
+          </span>
+        )}
       </div>
 
       {/* Tabs */}
@@ -106,21 +184,34 @@ export const ConstituentImpact = () => {
         })}
       </div>
 
-      {/* Rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-        {displayedConstituents.map((item) => (
-          <ConstituentRow
-            key={item.symbol}
-            symbol={item.symbol}
-            weight={item.weight}
-            price={item.price}
-            changePct={item.changePct}
-            vol={item.vol}
-            volMult={item.volMult}
-            pts={item.pts}
-            isPositive={item.isPositive}
-          />
-        ))}
+      {/* Rows or State Feedback */}
+      <div style={{ display: 'flex', flexDirection: 'column', overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
+        {isLoading && constituentsList.length === 0 ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)' }} className="text-body-sm">
+            Loading constituent impact data...
+          </div>
+        ) : isError && constituentsList.length === 0 ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--signal-bearish)' }} className="text-body-sm">
+            {error?.data?.message || 'Failed to load constituents'}
+          </div>
+        ) : displayedConstituents.length === 0 ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--text-muted)' }} className="text-body-sm">
+            No constituents matching active filter
+          </div>
+        ) : (
+          displayedConstituents.map((item) => (
+            <ConstituentRow
+              key={item.rawSymbol}
+              symbol={item.symbol}
+              weight={item.weight}
+              price={item.price}
+              changePct={item.changePct}
+              vol={item.vol}
+              pts={item.pts}
+              isPositive={item.isPositive}
+            />
+          ))
+        )}
       </div>
     </div>
   );

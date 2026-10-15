@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import { websocketClient } from '../services/websocket-client';
+import { websocketClient, isTokenExpired } from '../services/websocket-client';
 
 export const AuthContext = createContext();
 
@@ -11,12 +11,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Restore session
     const storedToken = localStorage.getItem('token');
-    if (storedToken) {
+    if (storedToken && !isTokenExpired(storedToken)) {
       setToken(storedToken);
-      // In a real app, validate token or fetch user profile
       setUser({ username: 'trader' }); 
       websocketClient.connect(storedToken);
     } else {
+      if (storedToken) {
+        localStorage.removeItem('token');
+      }
       // Connect unauthenticated to stream public index updates (landing page etc.)
       websocketClient.connect();
     }

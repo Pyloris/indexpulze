@@ -101,7 +101,12 @@ export const dataApi = baseApi.injectEndpoints({
         };
       },
     }),
+    getConstituents: builder.query({
+      query: (index = 'nifty') => ({
+        url: `/data/${encodeURIComponent(index)}/constituents`,
+      }),
+    }),
   }),
 });
 
-export const { useGetTickerDataQuery, useGetQuotesQuery } = dataApi;
+export const { useGetTickerDataQuery, useGetQuotesQuery, useGetConstituentsQuery } = dataApi;

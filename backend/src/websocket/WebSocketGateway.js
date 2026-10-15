@@ -134,19 +134,15 @@ export class WebSocketGateway {
       // Perform authentication check during handshake
       const { user, token, error } = ConnectionAuthenticator.authenticateUpgrade(request);
 
-      // If client explicitly sent a token that failed verification, reject upgrade with 401
       if (token && error) {
-        console.warn(`[WebSocketGateway] Handshake rejected due to invalid token: ${error}`);
-        socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n');
-        socket.destroy();
-        metricsCollector.recordRejection();
-        return;
+        console.warn(`[WebSocketGateway] Token verification notice: ${error}. Upgrading connection as guest.`);
       }
 
       // Allow upgrade for both authenticated users and unauthenticated/anonymous clients
       this.wss.handleUpgrade(request, socket, head, (ws) => {
         // Attach authenticated user identity (or null for unauthenticated guests)
         ws._authenticatedUser = user || null;
+        ws._authError = (token && error) ? error : null;
         this.wss.emit('connection', ws, request);
       });
     } catch (err) {
@@ -169,11 +165,11 @@ export class WebSocketGateway {
 
     this.connectionManager.register(session);
 
-    // Send connection acknowledgement
+    // Send connection acknowledgement (including any handshake auth error)
     session.send(createConnectionAck(session.id, user, {
       maxSubscriptions: session.maxSubscriptions,
       rateLimitPerSecond: session.maxOpsPerWindow
-    }));
+    }, ws._authError || null));
 
     // Setup native WebSocket ping/pong
     ws.on('pong', () => {

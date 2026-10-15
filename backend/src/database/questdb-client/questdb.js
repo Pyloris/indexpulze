@@ -31,9 +31,25 @@ class QuestDBClient {
     if (this.user && this.pass) {
       conf += `username=${encodeURIComponent(this.user)};password=${encodeURIComponent(this.pass)};`;
     }
-    // High performance tuning: auto-flush after 5,000 rows or every 500ms
-    conf += `auto_flush_rows=5000;auto_flush_interval=500;`;
+    // High performance tuning: auto-flush after 1,000 rows or every 200ms
+    // Configured with extended timeouts to prevent premature HTTP request aborts under load
+    conf += `auto_flush_rows=1000;auto_flush_interval=200;request_timeout=30000;retry_timeout=10000;`;
     return conf;
+  }
+
+  /**
+   * Safely closes and resets the active ILP sender instance upon error.
+   */
+  async resetSender() {
+    if (this.sender) {
+      const brokenSender = this.sender;
+      this.sender = null;
+      try {
+        await brokenSender.close();
+      } catch {
+        // ignore close error on broken connection
+      }
+    }
   }
 
   /**
@@ -121,81 +137,87 @@ class QuestDBClient {
   async insertTick(tick, tableName = this.tableName) {
     if (!tick || !tick.symbol) return;
 
-    const sender = await this.getSender();
+    try {
+      const sender = await this.getSender();
 
-    // Timestamp resolution: use exch_feed_time if available, otherwise current local time
-    // exch_feed_time from Fyers is in epoch seconds
-    const designatedTimestampMicros = tick.exch_feed_time
-      ? Math.floor(Number(tick.exch_feed_time) * 1000 * 1000)
-      : Date.now() * 1000;
+      // Timestamp resolution: use exch_feed_time if available, otherwise current local time
+      // exch_feed_time from Fyers is in epoch seconds
+      const designatedTimestampMicros = tick.exch_feed_time
+        ? Math.floor(Number(tick.exch_feed_time) * 1000 * 1000)
+        : Date.now() * 1000;
 
-    const row = sender.table(tableName);
+      const row = sender.table(tableName);
 
-    // Symbols (indexed categorical strings)
-    row.symbol('symbol', String(tick.symbol));
-    if (tick.type) {
-      row.symbol('type', String(tick.type));
-    }
+      // Symbols (indexed categorical strings)
+      row.symbol('symbol', String(tick.symbol));
+      if (tick.type) {
+        row.symbol('type', String(tick.type));
+      }
 
-    // Double fields
-    if (tick.ltp !== undefined && tick.ltp !== null) {
-      row.floatColumn('ltp', Number(tick.ltp));
-    }
-    if (tick.open_price !== undefined && tick.open_price !== null) {
-      row.floatColumn('open_price', Number(tick.open_price));
-    }
-    if (tick.high_price !== undefined && tick.high_price !== null) {
-      row.floatColumn('high_price', Number(tick.high_price));
-    }
-    if (tick.low_price !== undefined && tick.low_price !== null) {
-      row.floatColumn('low_price', Number(tick.low_price));
-    }
-    if (tick.prev_close_price !== undefined && tick.prev_close_price !== null) {
-      row.floatColumn('prev_close_price', Number(tick.prev_close_price));
-    }
-    if (tick.avg_trade_price !== undefined && tick.avg_trade_price !== null) {
-      row.floatColumn('avg_trade_price', Number(tick.avg_trade_price));
-    }
-    if (tick.bid_price !== undefined && tick.bid_price !== null) {
-      row.floatColumn('bid_price', Number(tick.bid_price));
-    }
-    if (tick.ask_price !== undefined && tick.ask_price !== null) {
-      row.floatColumn('ask_price', Number(tick.ask_price));
-    }
-    if (tick.lower_ckt !== undefined && tick.lower_ckt !== null) {
-      row.floatColumn('lower_ckt', Number(tick.lower_ckt));
-    }
-    if (tick.upper_ckt !== undefined && tick.upper_ckt !== null) {
-      row.floatColumn('upper_ckt', Number(tick.upper_ckt));
-    }
+      // Double fields
+      if (tick.ltp !== undefined && tick.ltp !== null) {
+        row.floatColumn('ltp', Number(tick.ltp));
+      }
+      if (tick.open_price !== undefined && tick.open_price !== null) {
+        row.floatColumn('open_price', Number(tick.open_price));
+      }
+      if (tick.high_price !== undefined && tick.high_price !== null) {
+        row.floatColumn('high_price', Number(tick.high_price));
+      }
+      if (tick.low_price !== undefined && tick.low_price !== null) {
+        row.floatColumn('low_price', Number(tick.low_price));
+      }
+      if (tick.prev_close_price !== undefined && tick.prev_close_price !== null) {
+        row.floatColumn('prev_close_price', Number(tick.prev_close_price));
+      }
+      if (tick.avg_trade_price !== undefined && tick.avg_trade_price !== null) {
+        row.floatColumn('avg_trade_price', Number(tick.avg_trade_price));
+      }
+      if (tick.bid_price !== undefined && tick.bid_price !== null) {
+        row.floatColumn('bid_price', Number(tick.bid_price));
+      }
+      if (tick.ask_price !== undefined && tick.ask_price !== null) {
+        row.floatColumn('ask_price', Number(tick.ask_price));
+      }
+      if (tick.lower_ckt !== undefined && tick.lower_ckt !== null) {
+        row.floatColumn('lower_ckt', Number(tick.lower_ckt));
+      }
+      if (tick.upper_ckt !== undefined && tick.upper_ckt !== null) {
+        row.floatColumn('upper_ckt', Number(tick.upper_ckt));
+      }
 
-    // Long (integer) fields
-    if (tick.vol_traded_today !== undefined && tick.vol_traded_today !== null) {
-      row.intColumn('vol_traded_today', Math.floor(Number(tick.vol_traded_today)));
-    }
-    if (tick.last_traded_qty !== undefined && tick.last_traded_qty !== null) {
-      row.intColumn('last_traded_qty', Math.floor(Number(tick.last_traded_qty)));
-    }
-    if (tick.tot_buy_qty !== undefined && tick.tot_buy_qty !== null) {
-      row.intColumn('tot_buy_qty', Math.floor(Number(tick.tot_buy_qty)));
-    }
-    if (tick.tot_sell_qty !== undefined && tick.tot_sell_qty !== null) {
-      row.intColumn('tot_sell_qty', Math.floor(Number(tick.tot_sell_qty)));
-    }
-    if (tick.bid_size !== undefined && tick.bid_size !== null) {
-      row.intColumn('bid_size', Math.floor(Number(tick.bid_size)));
-    }
-    if (tick.ask_size !== undefined && tick.ask_size !== null) {
-      row.intColumn('ask_size', Math.floor(Number(tick.ask_size)));
-    }
+      // Long (integer) fields
+      if (tick.vol_traded_today !== undefined && tick.vol_traded_today !== null) {
+        row.intColumn('vol_traded_today', Math.floor(Number(tick.vol_traded_today)));
+      }
+      if (tick.last_traded_qty !== undefined && tick.last_traded_qty !== null) {
+        row.intColumn('last_traded_qty', Math.floor(Number(tick.last_traded_qty)));
+      }
+      if (tick.tot_buy_qty !== undefined && tick.tot_buy_qty !== null) {
+        row.intColumn('tot_buy_qty', Math.floor(Number(tick.tot_buy_qty)));
+      }
+      if (tick.tot_sell_qty !== undefined && tick.tot_sell_qty !== null) {
+        row.intColumn('tot_sell_qty', Math.floor(Number(tick.tot_sell_qty)));
+      }
+      if (tick.bid_size !== undefined && tick.bid_size !== null) {
+        row.intColumn('bid_size', Math.floor(Number(tick.bid_size)));
+      }
+      if (tick.ask_size !== undefined && tick.ask_size !== null) {
+        row.intColumn('ask_size', Math.floor(Number(tick.ask_size)));
+      }
 
-    // Timestamp column (exchange feed time as a dedicated column)
-    if (tick.exch_feed_time) {
-      row.timestampColumn('exch_feed_time', Math.floor(Number(tick.exch_feed_time) * 1000 * 1000), 'us');
-    }
+      // Timestamp column (exchange feed time as a dedicated column)
+      if (tick.exch_feed_time) {
+        row.timestampColumn('exch_feed_time', Math.floor(Number(tick.exch_feed_time) * 1000 * 1000), 'us');
+      }
 
-    // Set designated timestamp (in microseconds)
-    await row.at(designatedTimestampMicros, 'us');
+      // Set designated timestamp (in microseconds)
+      await row.at(designatedTimestampMicros, 'us');
+    } catch (err) {
+      console.error(`[QuestDB] Ingestion error on ${tick.symbol}: ${err.message}. Resetting sender for recovery.`);
+      await this.resetSender();
+      throw err;
+    }
   }
 
   /**
@@ -207,10 +229,15 @@ class QuestDBClient {
   async insertBatch(ticks, tableName = this.tableName) {
     if (!Array.isArray(ticks) || ticks.length === 0) return;
 
-    for (const tick of ticks) {
-      await this.insertTick(tick, tableName);
+    try {
+      for (const tick of ticks) {
+        await this.insertTick(tick, tableName);
+      }
+      await this.flush();
+    } catch (err) {
+      await this.resetSender();
+      throw err;
     }
-    await this.flush();
   }
 
   /**
@@ -218,7 +245,13 @@ class QuestDBClient {
    */
   async flush() {
     if (this.sender) {
-      await this.sender.flush();
+      try {
+        await this.sender.flush();
+      } catch (err) {
+        console.error(`[QuestDB] Flush error: ${err.message}. Resetting sender.`);
+        await this.resetSender();
+        throw err;
+      }
     }
   }
 
@@ -227,11 +260,13 @@ class QuestDBClient {
    */
   async close() {
     if (this.sender) {
+      const activeSender = this.sender;
+      this.sender = null;
       try {
-        await this.sender.flush();
-        await this.sender.close();
-      } finally {
-        this.sender = null;
+        await activeSender.flush();
+        await activeSender.close();
+      } catch {
+        // ignore errors during shutdown
       }
     }
   }

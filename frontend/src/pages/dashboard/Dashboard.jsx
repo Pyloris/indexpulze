@@ -102,7 +102,7 @@ export const Dashboard = () => {
 
         {/* Bottom Metrics Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--spacing-md)' }}>
-          <MetricBox 
+          {/* <MetricBox 
             title="MAX PAIN STRIKE" 
             icon={Target}
             badge="WEEKLY EXP" 
@@ -126,7 +126,7 @@ export const Dashboard = () => {
             callOi="2.21 Cr"
             putOiPct={54}
             callOiPct={46}
-          />
+          /> */}
         </div>
         
       </div>
@@ -136,7 +136,7 @@ export const Dashboard = () => {
         
         <ConstituentImpact />
 
-        <IndexParticipationCard 
+        {/* <IndexParticipationCard 
           title="INDEX PARTICIPATION GAUGE"
           badgeText="118% of 10-D AVG"
           totalShares="184.2M"
@@ -144,7 +144,7 @@ export const Dashboard = () => {
           bearishPct={36}
           bullVol="117.8M"
           bearVol="66.4M"
-        />
+        /> */}
 
       </div>
     </div>
