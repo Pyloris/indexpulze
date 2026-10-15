@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node src/scripts/test-websocket.js",
-    "test:ws": "node src/scripts/test-websocket.js",
-    "benchmark:ws": "node src/scripts/benchmark-websocket.js",
+    "test": "node --env-file=../.env src/scripts/test-websocket.js",
+    "test:ws": "node --env-file=../.env src/scripts/test-websocket.js",
+    "benchmark:ws": "node --env-file=../.env src/scripts/benchmark-websocket.js",
     "auth:fyers": "node --env-file=../.env src/scripts/reauth_fyers.js",
     "dev": "pm2 start ecosystem.config.cjs"
   },

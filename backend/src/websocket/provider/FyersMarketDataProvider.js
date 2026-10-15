@@ -66,12 +66,16 @@ export class FyersMarketDataProvider extends MarketDataProvider {
       'SENSEX',
     ]);
 
+    // Permanent default symbols registry
+    this.defaultSymbols = new Set(defaultSymbols);
+
     // Track active instruments
     this.subscribedSymbols = new Set(options.symbols || Array.from(defaultSymbols));
 
     // Cache of last state per symbol
     this.lastState = new Map();
     this.isConnected = false;
+    this.enqueuedTickCount = 0;
   }
 
   /**
@@ -138,11 +142,14 @@ export class FyersMarketDataProvider extends MarketDataProvider {
 
       // Wire event listeners
       this.skt.on('connect', () => {
+        if (!this.isRunning || !this.skt) return;
         this.isConnected = true;
         console.log('[FyersMarketDataProvider] Connected to Fyers Data WebSocket successfully.');
-        const symbolsToSub = [...this.subscribedSymbols].map((s) => this.toFyersSymbol(s));
-        if (symbolsToSub.length > 0) {
-          console.log(`[FyersMarketDataProvider] Subscribing to ${symbolsToSub.length} instruments:`, symbolsToSub);
+        const symbolsToSub = Array.from(
+          new Set([...this.subscribedSymbols].map((s) => this.toFyersSymbol(s)))
+        );
+        if (symbolsToSub.length > 0 && typeof this.skt.subscribe === 'function') {
+          console.log(`[FyersMarketDataProvider] Subscribing to ${symbolsToSub.length} unique instruments:`, symbolsToSub);
           this.skt.subscribe(symbolsToSub);
         }
       });
@@ -233,6 +240,11 @@ export class FyersMarketDataProvider extends MarketDataProvider {
       // Non-blocking catch to prevent socket listener interruption
       console.warn(`[FyersMarketDataProvider:Queue] Enqueuing tick failed for ${fyersSymbol}:`, err.message);
     });
+
+    this.enqueuedTickCount = (this.enqueuedTickCount || 0) + 1;
+    if (this.enqueuedTickCount % 500 === 0) {
+      console.log(`[FyersMarketDataProvider:Queue] Enqueued ${this.enqueuedTickCount} ticks to ${QUEUE_NAMES.TICK_INGESTOR_QUEUE} (latest: ${fyersSymbol} @ ${ltp})`);
+    }
 
     this.seqCounter++;
     const aliases = this.getAliases(fyersSymbol);
@@ -334,9 +346,15 @@ export class FyersMarketDataProvider extends MarketDataProvider {
    */
   unsubscribeInstrument(symbol) {
     if (!symbol) return;
+    const fyersSymbol = this.toFyersSymbol(symbol);
+
+    // Protect default internal subscriptions: never unsubscribe default instruments from upstream socket
+    if (this.defaultSymbols.has(symbol) || this.defaultSymbols.has(fyersSymbol)) {
+      return;
+    }
+
     this.subscribedSymbols.delete(symbol);
     if (this.isConnected && this.skt && typeof this.skt.unsubscribe === 'function') {
-      const fyersSymbol = this.toFyersSymbol(symbol);
       this.skt.unsubscribe([fyersSymbol]);
     }
   }

@@ -225,11 +225,12 @@ export class WebSocketGateway {
       clearInterval(this.heartbeatTimer);
     }
     await this.marketDataProvider.stop();
-    await this.distributionAdapter.disconnect();
 
     for (const session of this.connectionManager.getAll()) {
       session.close(1001, 'Server shutting down');
     }
+
+    await this.distributionAdapter.disconnect();
 
     if (this.wss) {
       this.wss.close();

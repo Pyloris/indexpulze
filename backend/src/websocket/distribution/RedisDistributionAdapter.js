@@ -81,6 +81,12 @@ export class RedisDistributionAdapter extends EventEmitter {
   async unsubscribeChannel(channel) {
     if (!this.subscriber || !this.subscribedChannels.has(channel)) return;
     this.subscribedChannels.delete(channel);
-    await this.subscriber.unsubscribe(channel);
+    if (this.subscriber.status === 'ready') {
+      try {
+        await this.subscriber.unsubscribe(channel);
+      } catch {
+        // Safe ignore on closing socket
+      }
+    }
   }
 }

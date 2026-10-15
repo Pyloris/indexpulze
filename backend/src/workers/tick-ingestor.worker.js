@@ -1,5 +1,8 @@
 import { questdb } from '../database/questdb-client/questdb.js';
 
+let processedCount = 0;
+let lastLogTs = 0;
+
 /**
  * Tick Ingestor Job Handler
  *
@@ -12,7 +15,19 @@ import { questdb } from '../database/questdb-client/questdb.js';
 export async function tickIngestorHandler(job) {
   const { data, id, name } = job;
 
-  if (!data || !data.symbol) {
+  if (!data) {
+    return { skipped: true, reason: 'Invalid tick payload: empty data' };
+  }
+
+  // Handle batch payload if passed as array
+  if (Array.isArray(data)) {
+    if (data.length === 0) return { skipped: true, reason: 'Empty batch' };
+    await questdb.insertBatch(data);
+    processedCount += data.length;
+    return { processed: true, jobId: id, batchSize: data.length, timestamp: Date.now() };
+  }
+
+  if (!data.symbol) {
     return { skipped: true, reason: 'Invalid tick payload: missing symbol' };
   }
 
@@ -31,6 +46,13 @@ export async function tickIngestorHandler(job) {
     prev_close_price: data.prev_close_price,
     type: data.type || 'sf',
   });
+
+  processedCount++;
+  const now = Date.now();
+  if (processedCount % 500 === 0 || (now - lastLogTs > 15000 && processedCount > 0)) {
+    lastLogTs = now;
+    console.log(`[TickIngestorWorker] Persisted ${processedCount} ticks into QuestDB (latest: ${data.symbol} @ ${data.ltp})`);
+  }
 
   return {
     processed: true,

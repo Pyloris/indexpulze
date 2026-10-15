@@ -16,7 +16,7 @@ module.exports = {
             instances: 1,
             exec_mode: "fork",
             autorestart: false,
-            max_memory_restart: "1G",
+            max_memory_restart: "2G",
             watch: false,
             node_args: "--env-file=../.env",
         }
