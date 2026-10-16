@@ -6,13 +6,21 @@ export class AuthorizationService {
     'NIFTY',
     'NIFTY50',
     'NIFTY_50',
+    'NSE:NIFTY50-INDEX',
     'BANKNIFTY',
     'BANK_NIFTY',
+    'NSE:NIFTYBANK-INDEX',
     'FINNIFTY',
+    'NSE:FINNIFTY-INDEX',
     'SENSEX',
+    'BSE:SENSEX-INDEX',
     'MID_SELECT',
     'MIDSELECT',
-    'MIDCPNIFTY'
+    'MIDCPNIFTY',
+    'NSE:MIDCPNIFTY-INDEX',
+    'NIFTY_IT',
+    'NIFTYIT',
+    'NSE:NIFTYIT-INDEX'
   ]);
 
   /**
@@ -22,7 +30,10 @@ export class AuthorizationService {
    */
   static isIndexSymbol(symbol) {
     if (!symbol) return false;
-    return this.INDEX_SYMBOLS.has(symbol.toUpperCase());
+    const upper = symbol.toUpperCase();
+    if (this.INDEX_SYMBOLS.has(upper)) return true;
+    const stripped = upper.replace(/^(NSE|BSE):/, '').replace(/-(EQ|INDEX|BE|SM)$/, '');
+    return this.INDEX_SYMBOLS.has(stripped);
   }
 
   /**

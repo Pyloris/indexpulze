@@ -10,6 +10,7 @@ import { FyersMarketDataProvider } from './provider/FyersMarketDataProvider.js';
 import { InMemoryDistributionAdapter } from './distribution/InMemoryDistributionAdapter.js';
 import { RedisDistributionAdapter } from './distribution/RedisDistributionAdapter.js';
 import { createConnectionAck } from './protocol/messages.js';
+import { parseAndValidateChannel } from './protocol/schemas.js';
 import { metricsCollector } from './core/MetricsCollector.js';
 import { appConfig } from '../config/app-config.js';
 
@@ -82,16 +83,16 @@ export class WebSocketGateway {
     // 3. Forward subscription interest changes to distribution adapter and upstream broker
     this.subscriptionManager.onChannelActive((channel) => {
       this.distributionAdapter.subscribeChannel(channel);
-      const parts = channel.split(':');
-      if (parts[1]) {
-        this.marketDataProvider.subscribeInstrument(parts[1]);
+      const parsed = parseAndValidateChannel(channel);
+      if (parsed.valid && parsed.symbol) {
+        this.marketDataProvider.subscribeInstrument(parsed.symbol);
       }
     });
     this.subscriptionManager.onChannelIdle((channel) => {
       this.distributionAdapter.unsubscribeChannel(channel);
-      const parts = channel.split(':');
-      if (parts[1]) {
-        this.marketDataProvider.unsubscribeInstrument(parts[1]);
+      const parsed = parseAndValidateChannel(channel);
+      if (parsed.valid && parsed.symbol) {
+        this.marketDataProvider.unsubscribeInstrument(parsed.symbol);
       }
     });
 

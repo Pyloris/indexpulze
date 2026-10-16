@@ -45,22 +45,35 @@ export const ChartWidget = ({ index, timeframe }) => {
 
   useEffect(() => {
     const candleList = tickerPayload?.data?.data || tickerPayload?.data?.candles || (Array.isArray(tickerPayload?.data) ? tickerPayload.data : null);
-    if (!candleList || !chartRef.current) return;
+    if (!candleList || candleList.length === 0 || !chartRef.current) return;
+
+    const formattedCandles = candleList.map(d => ({
+      time: Number(d.time ?? d.timestamp),
+      open: Number(d.open),
+      high: Number(d.high),
+      low: Number(d.low),
+      close: Number(d.close),
+    })).filter(c => !isNaN(c.time) && !isNaN(c.close));
 
     const volume = candleList.map(d => ({
-      time: Number(d.time ?? d.timestamp), value: Number(d.volume || 0),
+      time: Number(d.time ?? d.timestamp),
+      value: Number(d.volume || 0),
       color: d.close >= d.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'
-    }));
+    })).filter(v => !isNaN(v.time));
 
     if (!dataLoadedRef.current) {
       // First full data load
-      chartRef.current.setSeriesData('candles', candleList);
+      chartRef.current.setSeriesData('candles', formattedCandles);
       chartRef.current.setSeriesData('volume', volume);
       dataLoadedRef.current = true;
     } else {
-      // Just update the latest tick
-      chartRef.current.updateSeries('candles', candleList[candleList.length - 1]);
-      chartRef.current.updateSeries('volume', volume[volume.length - 1]);
+      // Just update or append the latest bar
+      if (formattedCandles.length > 0) {
+        chartRef.current.updateSeries('candles', formattedCandles[formattedCandles.length - 1]);
+      }
+      if (volume.length > 0) {
+        chartRef.current.updateSeries('volume', volume[volume.length - 1]);
+      }
     }
 
   }, [tickerPayload]);

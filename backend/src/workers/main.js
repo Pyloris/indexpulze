@@ -5,8 +5,10 @@ import { connectDatabase, disconnectDatabase } from '../database/connection.js';
 import { questdb } from '../database/questdb-client/questdb.js';
 import { QUEUE_NAMES } from '../constants/queue-names.js';
 import { tickIngestorHandler } from './tick-ingestor.worker.js';
+import { registerVolumeProfileWorker } from './volume-profile.worker.js';
+import { registerIndexVolumeProfileWorker } from './index-volume-profile.worker.js';
 
-let isWorkerRegistered = false;
+let isTickWorkerRegistered = false;
 
 /**
  * Registers the tick ingestor worker on the centralized queue manager
@@ -15,7 +17,7 @@ let isWorkerRegistered = false;
  */
 export function registerTickIngestorWorker(options = {}) {
   const queueName = QUEUE_NAMES.TICK_INGESTOR_QUEUE;
-  if (isWorkerRegistered && queueManager.workers.has(queueName)) {
+  if (isTickWorkerRegistered && queueManager.workers.has(queueName)) {
     return queueManager.workers.get(queueName);
   }
 
@@ -30,7 +32,7 @@ export function registerTickIngestorWorker(options = {}) {
     }
   );
 
-  isWorkerRegistered = true;
+  isTickWorkerRegistered = true;
   return worker;
 }
 
@@ -56,6 +58,12 @@ export async function startWorkers() {
 
   // 3. Register tick ingestor queue worker handler
   registerTickIngestorWorker();
+
+  // 4. Register volume profile queue worker handler
+  registerVolumeProfileWorker();
+
+  // 5. Register index volume profile queue worker handler
+  registerIndexVolumeProfileWorker();
 
   console.log('[WorkerMain] All background workers started and listening for jobs.');
 }
@@ -92,8 +100,12 @@ if (isDirectExecution) {
   });
 }
 
+export { registerVolumeProfileWorker, registerIndexVolumeProfileWorker };
+
 export default {
   startWorkers,
   registerTickIngestorWorker,
+  registerVolumeProfileWorker,
+  registerIndexVolumeProfileWorker,
   shutdown,
 };

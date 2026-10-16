@@ -17,11 +17,18 @@ export const SIDEBAR_MENU_CONFIG = [
   // },
   {
     id: 'volume-profile',
-    label: 'Volume Profile',
+    label: 'Index Profile',
     to: ROUTES.VOLUME_PROFILE,
     icon: 'BarChart2',
     matchPaths: [ROUTES.VOLUME_PROFILE, `${ROUTES.VOLUME_PROFILE}/`]
   },
+  // {
+  //   id: 'stock-volume-profile',
+  //   label: 'Stock Profile',
+  //   to: ROUTES.STOCK_VOLUME_PROFILE,
+  //   icon: 'TrendingUp',
+  //   matchPaths: [ROUTES.STOCK_VOLUME_PROFILE, `${ROUTES.STOCK_VOLUME_PROFILE}/`]
+  // },
   {
     id: 'settings',
     label: 'Settings',

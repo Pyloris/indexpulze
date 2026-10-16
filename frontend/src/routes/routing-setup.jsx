@@ -11,6 +11,7 @@ import { Login } from '../pages/auth/login/Login';
 import { Dashboard } from '../pages/dashboard/Dashboard';
 import { Treemap } from '../pages/treemap/Treemap';
 import { VolumeProfile } from '../pages/volume-profile/VolumeProfile';
+import { StockVolumeProfile } from '../pages/stock-volume-profile/StockVolumeProfile';
 import { AccountSettings } from '../pages/account/AccountSettings';
 import { Settings } from '../pages/settings/Settings';
 
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
           { path: 'dashboard', element: <Dashboard /> },
           { path: 'treemap', element: <Treemap /> },
           { path: 'volume-profile', element: <VolumeProfile /> },
+          { path: 'stock-volume-profile', element: <StockVolumeProfile /> },
           { path: 'account', element: <AccountSettings /> },
           { path: 'settings', element: <Settings /> }
         ]

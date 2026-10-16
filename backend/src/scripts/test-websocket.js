@@ -202,7 +202,18 @@ async function runTestSuite() {
 
       await waitForMessage(ws, m => m.type === ServerEventTypes.SUBSCRIPTION_ACK);
 
-      // Await live incoming tick
+      // Emit synthetic tick event to test distribution & routing
+      setTimeout(() => {
+        gateway.distributionAdapter.publish('market.tick:NIFTY', {
+          type: ServerEventTypes.MARKET_TICK,
+          symbol: 'NIFTY',
+          seq: 1,
+          ts: Date.now(),
+          data: { price: 25100, quantity: 50 }
+        });
+      }, 50);
+
+      // Await incoming tick
       const tick = await waitForMessage(ws, m => m.type === ServerEventTypes.MARKET_TICK && m.symbol === 'NIFTY');
       assert.strictEqual(tick.type, 'market.tick');
       assert.strictEqual(tick.symbol, 'NIFTY');

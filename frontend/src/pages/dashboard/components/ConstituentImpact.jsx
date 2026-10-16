@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ConstituentRow } from './ConstituentRow';
 import { useDashboardStore, CONSTITUENT_TABS } from '../../../stores/useDashboardStore';
 import { useGetConstituentsQuery } from '../../../services/data-api';
@@ -34,6 +35,7 @@ const mapIndexToKey = (selectedIndex) => {
 };
 
 export const ConstituentImpact = () => {
+  const navigate = useNavigate();
   const { selectedIndex, activeConstituentTab, setActiveConstituentTab } = useDashboardStore();
 
   const indexQueryParam = useMemo(() => mapIndexToKey(selectedIndex), [selectedIndex]);
@@ -203,12 +205,17 @@ export const ConstituentImpact = () => {
             <ConstituentRow
               key={item.rawSymbol}
               symbol={item.symbol}
+              rawSymbol={item.rawSymbol}
               weight={item.weight}
               price={item.price}
               changePct={item.changePct}
               vol={item.vol}
               pts={item.pts}
               isPositive={item.isPositive}
+              onClick={() => {
+                const targetSym = item.rawSymbol || `NSE:${item.symbol}-EQ`;
+                navigate(`/app/stock-volume-profile?symbol=${encodeURIComponent(targetSym)}`);
+              }}
             />
           ))
         )}

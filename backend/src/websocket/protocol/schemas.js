@@ -9,7 +9,8 @@ import { ClientOps, SupportedChannelPrefixes } from './constants.js';
  * - market.quote:RELIANCE
  * - index.analytics:NIFTY
  */
-const channelRegex = new RegExp(`^(${SupportedChannelPrefixes.map(p => p.replace('.', '\\.')).join('|')}):([A-Z0-9_]+)(?::([a-z0-9_]+))?$`);
+const prefixPattern = SupportedChannelPrefixes.map(p => p.replace('.', '\\.')).join('|');
+const channelRegex = new RegExp(`^(${prefixPattern}):([A-Za-z0-9_:-]+)$`);
 
 export const channelSchema = Joi.string()
   .trim()
@@ -69,7 +70,8 @@ export function parseAndValidateChannel(channel) {
     return { valid: false, error: 'Channel must be a string' };
   }
 
-  const match = channel.match(channelRegex);
+  const trimmed = channel.trim();
+  const match = trimmed.match(channelRegex);
   if (!match) {
     return {
       valid: false,
@@ -77,7 +79,26 @@ export function parseAndValidateChannel(channel) {
     };
   }
 
-  const [, prefix, symbol, modifier] = match;
+  const [, prefix, remainder] = match;
+  let symbol = remainder;
+  let modifier = undefined;
+
+  if (prefix === 'market.candle') {
+    // Look for modifier at the end: e.g. :15m, :5m, :1h, :1d, :session
+    const lastColonIdx = remainder.lastIndexOf(':');
+    if (lastColonIdx !== -1) {
+      const potentialModifier = remainder.slice(lastColonIdx + 1);
+      if (/^[0-9]+[smhdSMHD]?$|^session$/i.test(potentialModifier)) {
+        symbol = remainder.slice(0, lastColonIdx);
+        modifier = potentialModifier.toLowerCase();
+      }
+    }
+  }
+
+  if (!symbol) {
+    return { valid: false, error: 'Missing instrument symbol in channel' };
+  }
+
   return {
     valid: true,
     prefix,
